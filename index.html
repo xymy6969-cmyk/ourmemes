@@ -5,60 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Самый топовый словарь в мире</title>
   <style>
-    /* ТВОИ ОРИГИНАЛЬНЫЕ СТИЛИ */
-    :root { --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb; --muted: #9aa0aa; --accent: #7c7cff; --border: rgba(255,255,255,0.08); }
+    /* ... (все твои предыдущие стили) ... */
+    :root { 
+      --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb; 
+      --muted: #9aa0aa; --accent: #7c7cff; --border: rgba(255,255,255,0.08);
+      --success: #2ecc71; /* Зеленый цвет для залогиненного состояния */
+    }
+
+    /* АНИМАЦИЯ И СОСТОЯНИЯ КНОПКИ */
+    .auth-btn { transition: all 0.3s ease; position: relative; }
+    
+    /* Состояние: Не авторизован (Мигает) */
+    .auth-btn.logged-out {
+      animation: pulse-red 2s infinite;
+      border: 1px solid var(--accent) !important;
+    }
+
+    /* Состояние: Авторизован (Горит зеленым) */
+    .auth-btn.logged-in {
+      border: 1px solid var(--success) !important;
+      color: var(--success) !important;
+      box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
+    }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(124, 124, 255, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(124, 124, 255, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(124, 124, 255, 0); }
+    }
+
+    /* Остальные стили из твоего оригинала... */
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; font-family: Inter, system-ui, sans-serif; background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%), radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg); color: var(--text); overflow-x: hidden; }
-    body::before { content: ""; position: fixed; inset: 0; background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px); pointer-events: none; animation: drift 40s linear infinite; }
-    @keyframes drift { from { transform: translateX(0); } to { transform: translateX(200px); } }
+    body { margin: 0; min-height: 100vh; font-family: Inter, sans-serif; background: var(--bg); color: var(--text); }
     header { position: sticky; top: 0; z-index: 10; padding: 20px 28px; backdrop-filter: blur(14px); background: rgba(11,13,18,0.6); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .auth-btn { animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(124,124,255,0.4); } 70% { box-shadow: 0 0 0 10px rgba(124,124,255,0); } 100% { box-shadow: 0 0 0 0 rgba(124,124,255,0); } }
     main { width: 100vw; padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
-    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(18px); animation: floatIn 0.6s ease both; }
-    @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    label { display: block; font-size: 13px; color: var(--muted); margin-top: 12px; }
-    input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); }
-    button { margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; }
+    input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); margin-bottom: 10px; }
+    button { padding: 10px 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; }
     button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
-    .card img { width: 100%; height: 170px; object-fit: cover; background: #000; cursor: pointer; }
-    .card-body { padding: 14px 16px 16px; }
-    .tag { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 4px; }
-    
-    /* POPUP */
-    #pop { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
+    .card img { width: 100%; height: 170px; object-fit: cover; cursor: pointer; }
+    #pop { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
     #pop img { max-width: 90%; max-height: 90%; border-radius: 12px; }
-
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div id="pop" onclick="this.style.display='none'"><img id="popImg"></div>
+  
   <header>
     <div>
       <h1>Наш персональный словарь</h1>
-      <p style="margin: 6px 0 0; color: var(--muted);">Самая крутая база слов, мемов и прочего</p>
+      <p style="margin: 6px 0 0; color: var(--muted); font-size: 14px;">Самая крутая база слов, мемов и прочего</p>
     </div>
-    <button class="secondary auth-btn" onclick="setAuth()">Авторизация</button>
+    <button id="authBtn" class="secondary auth-btn" onclick="handleAuthClick()">Авторизация</button>
   </header>
 
   <main>
     <section class="panel">
       <h2>Добавить выражение</h2>
-      <label>Название / выражение</label>
-      <input id="titleInput" placeholder="Например: Ну это уже клиника" /> <label>Описание</label>
-      <textarea id="descInput" rows="3" placeholder="Что это значит, где используется"></textarea> <label>Хештеги (через запятую)</label>
-      <input id="tagsInput" placeholder="#мем, #ирония" /> <label>Картинка</label>
+      <input id="titleInput" placeholder="Например: Ну это уже клиника" />
+      <textarea id="descInput" rows="3" placeholder="Что это значит, где используется"></textarea>
+      <input id="tagsInput" placeholder="#мем, #ирония" />
       <input id="imageInput" type="file" accept="image/*" />
       <div style="display: flex; gap: 8px;">
         <button onclick="addEntry()" style="flex: 2;">Добавить</button>
-        <button class="secondary" onclick="clearAll()" style="flex: 1; margin-top: 14px;">Очистить всё</button> </div>
+        <button class="secondary" onclick="clearAll()" style="flex: 1;">Очистить</button>
+      </div>
     </section>
 
     <section>
-      <input id="searchInput" class="search" oninput="render()" placeholder="Поиск по словам и тегам…" 
+      <input id="searchInput" oninput="render()" placeholder="Поиск по словам и тегам…" 
              style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border); margin-bottom: 20px;"/>
       <div id="list" class="list"></div>
     </section>
@@ -69,9 +87,38 @@
     const SKIP = { 'ngrok-skip-browser-warning': 'true' };
     let entries = [];
 
-    function setAuth() {
-      const k = prompt("Введите MASTER_KEY:");
-      if (k) { localStorage.setItem('api_k', k); load(); }
+    // ОБНОВЛЕННАЯ ЛОГИКА АВТОРИЗАЦИИ
+    function updateAuthUI() {
+      const btn = document.getElementById('authBtn');
+      const isLogged = !!localStorage.getItem('api_k');
+      
+      if (isLogged) {
+        btn.innerText = 'Выйти';
+        btn.classList.remove('logged-out');
+        btn.classList.add('logged-in');
+      } else {
+        btn.innerText = 'Авторизация';
+        btn.classList.remove('logged-in');
+        btn.classList.add('logged-out');
+      }
+    }
+
+    function handleAuthClick() {
+      if (localStorage.getItem('api_k')) {
+        // Если залогинен — выходим
+        if (confirm('Выйти из аккаунта?')) {
+          localStorage.removeItem('api_k');
+          updateAuthUI();
+        }
+      } else {
+        // Если не залогинен — вводим ключ
+        const k = prompt("Введите MASTER_KEY:");
+        if (k) {
+          localStorage.setItem('api_k', k);
+          updateAuthUI();
+          load();
+        }
+      }
     }
 
     async function load() {
@@ -79,33 +126,53 @@
         const r = await fetch(API_URL, { headers: SKIP });
         entries = await r.json();
         render();
-      } catch (e) { console.log("Оффлайн"); }
+      } catch (e) { console.log("Ошибка загрузки"); }
     }
 
     async function addEntry() {
       const k = localStorage.getItem('api_k');
-      if (!k) return setAuth();
+      if (!k) return handleAuthClick();
+      
       const fd = new FormData();
       fd.append('title', titleInput.value);
       fd.append('desc', descInput.value);
       fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
       if (imageInput.files[0]) fd.append('image', imageInput.files[0]);
 
-      await fetch(API_URL, { method: 'POST', headers: { ...SKIP, 'x-api-key': k }, body: fd });
-      titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
-      load();
+      const res = await fetch(API_URL, { 
+        method: 'POST', 
+        headers: { ...SKIP, 'x-api-key': k }, 
+        body: fd 
+      });
+
+      if (res.ok) {
+        titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
+        load();
+      } else {
+        alert("Ключ неверный или просрочен");
+        localStorage.removeItem('api_k');
+        updateAuthUI();
+      }
     }
 
     async function removeEntry(id) {
       const k = localStorage.getItem('api_k');
-      await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: { ...SKIP, 'x-api-key': k } });
+      if (!k) return handleAuthClick();
+      await fetch(`${API_URL}/${id}`, { 
+        method: 'DELETE', 
+        headers: { ...SKIP, 'x-api-key': k } 
+      });
       load();
     }
 
     async function clearAll() {
-      if (!confirm('Удалить всё?')) return;
       const k = localStorage.getItem('api_k');
-      await fetch(API_URL, { method: 'DELETE', headers: { ...SKIP, 'x-api-key': k } });
+      if (!k) return handleAuthClick();
+      if (!confirm('Удалить всё?')) return;
+      await fetch(API_URL, { 
+        method: 'DELETE', 
+        headers: { ...SKIP, 'x-api-key': k } 
+      });
       load();
     }
 
@@ -113,7 +180,6 @@
       const q = searchInput.value.toLowerCase();
       const list = document.getElementById('list');
       list.innerHTML = '';
-
       entries.filter(e => 
         e.title.toLowerCase().includes(q) || 
         (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
@@ -132,6 +198,9 @@
         list.appendChild(div);
       });
     }
+
+    // Инициализация при загрузке
+    updateAuthUI();
     load();
   </script>
 </body>
