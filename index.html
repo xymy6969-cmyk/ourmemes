@@ -113,10 +113,25 @@
     }
 
     // Добавление записи (твоя логика + fetch)
-    async function addEntry() {
+    async function removeEntry(id) {
       const key = localStorage.getItem('cloud_api_key');
       if (!key) return auth();
 
+      // Мы передаем ID прямо в URL
+      const res = await fetch(`${API_URL}/${id}`, { 
+        method: 'DELETE', 
+        headers: { 
+          ...SKIP_WARN, 
+          'x-api-key': key 
+        } 
+      });
+
+      if (res.ok) {
+        load(); // Обновляем список, если сервер ответил 200 OK
+      } else {
+        alert("Ошибка удаления! Проверь ключ в Авторизации.");
+      }
+    }
       const title = titleInput.value.trim();
       if (!title) return;
 
