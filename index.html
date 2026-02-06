@@ -21,7 +21,7 @@
                   radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg);
       color: var(--text); overflow-x: hidden;
     }
-    /* Твоя легендарная анимация */
+    /* Твоя анимация полосок */
     body::before {
       content: ""; position: fixed; inset: 0; pointer-events: none;
       background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px);
@@ -29,7 +29,7 @@
     }
     @keyframes drift { from { transform: translateX(0); } to { transform: translateX(200px); } }
 
-    /* Окно входа */
+    /* ЭКРАН ВХОДА */
     #lockScreen {
       position: fixed; inset: 0; z-index: 9999; background: var(--bg);
       display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px);
@@ -51,7 +51,7 @@
     .card-body { padding: 15px; }
     .tag { font-size: 11px; padding: 4px 10px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 5px; }
 
-    /* Попап картинки */
+    /* ПОПАП КАРТИНКИ */
     #pop { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; cursor: pointer; }
     #pop img { max-width: 90%; max-height: 90%; border-radius: 12px; }
 
@@ -84,10 +84,11 @@
         <input id="imageInput" type="file" accept="image/*" />
         <button onclick="addEntry()">Добавить</button>
         <button class="secondary" onclick="clearAll()">Удалить всё</button>
+        <button class="secondary" onclick="logout()" style="margin-top:10px; border-color:transparent; font-size:12px; opacity:0.5">Выйти</button>
     </section>
 
     <section>
-        <input class="search" id="searchInput" placeholder="Поиск…" oninput="render()" />
+        <input class="search" id="searchInput" placeholder="Поиск по названию или тегам…" oninput="render()" />
         <div id="list" class="list"></div>
     </section>
 </main>
@@ -99,72 +100,106 @@
 
     window.onload = () => {
         const key = localStorage.getItem('master_key');
-        if (!key) document.getElementById('lockScreen').classList.remove('hidden');
-        else load();
+        if (!key) {
+            document.getElementById('lockScreen').classList.remove('hidden');
+        } else {
+            load();
+        }
     };
 
     async function tryLogin() {
         const k = document.getElementById('passInput').value;
-        const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': k } });
-        if (res.ok) {
-            localStorage.setItem('master_key', k);
-            document.getElementById('lockScreen').classList.add('hidden');
-            load();
-        } else alert("Неверный ключ!");
+        if (!k) return;
+        try {
+            const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': k } });
+            if (res.ok) {
+                localStorage.setItem('master_key', k);
+                document.getElementById('lockScreen').classList.add('hidden');
+                load();
+            } else { alert("Неверный мастер-ключ!"); }
+        } catch (e) { alert("Ошибка подключения к VPS."); }
     }
+
+    function logout() { localStorage.removeItem('master_key'); location.reload(); }
 
     async function load() {
         const key = localStorage.getItem('master_key');
-        const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': key } });
-        if (res.status === 403) { localStorage.removeItem('master_key'); location.reload(); }
-        entries = await res.json();
-        render();
+        try {
+            const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': key } });
+            if (res.status === 403) return logout();
+            entries = await res.json();
+            render();
+        } catch (e) { console.error("Ошибка загрузки"); }
     }
 
     async function addEntry() {
         const key = localStorage.getItem('master_key');
-        const fd = new FormData();
-        fd.append('title', titleInput.value);
-        fd.append('desc', descInput.value);
-        fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
-        if (imageInput.files[0]) fd.append('image', imageInput.files[0]);
+        const title = document.getElementById('titleInput').value;
+        if (!title) return alert("Введите название!");
 
-        await fetch(API_URL, { method: 'POST', headers: { ...SKIP_HEADER, 'x-api-key': key }, body: fd });
-        titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
-        load();
+        const fd = new FormData();
+        fd.append('title', title);
+        fd.append('desc', document.getElementById('descInput').value);
+        fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(Boolean)));
+        
+        const file = document.getElementById('imageInput').files[0];
+        if (file) fd.append('image', file);
+
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { ...SKIP_HEADER, 'x-api-key': key },
+            body: fd
+        });
+
+        if (res.ok) {
+            document.getElementById('titleInput').value = '';
+            document.getElementById('descInput').value = '';
+            document.getElementById('tagsInput').value = '';
+            document.getElementById('imageInput').value = '';
+            load();
+        }
     }
 
     async function removeEntry(id) {
-        if (!confirm("Удалить?")) return;
+        if(!confirm("Удалить?")) return;
         const key = localStorage.getItem('master_key');
-        await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: { ...SKIP_HEADER, 'x-api-key': key } });
+        await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: { ...SKIP_HEADER, 'x-api-key': key }
+        });
         load();
     }
 
     async function clearAll() {
-        if (!confirm("Удалить ВСЕ?")) return;
+        if (!confirm("Удалить ВСЕ записи?")) return;
         const key = localStorage.getItem('master_key');
-        await fetch(API_URL, { method: 'DELETE', headers: { ...SKIP_HEADER, 'x-api-key': key } });
+        await fetch(API_URL, {
+            method: 'DELETE',
+            headers: { ...SKIP_HEADER, 'x-api-key': key }
+        });
         load();
     }
 
     function render() {
-        const q = searchInput.value.toLowerCase();
+        const q = document.getElementById('searchInput').value.toLowerCase();
         const list = document.getElementById('list');
         list.innerHTML = '';
 
-        entries.filter(e => e.title.toLowerCase().includes(q) || e.tags.some(t => t.toLowerCase().includes(q)))
-        .forEach(e => {
+        entries.filter(e => 
+            e.title.toLowerCase().includes(q) || 
+            (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
+        ).forEach(e => {
             const card = document.createElement('div');
             card.className = 'card';
             card.innerHTML = `
-                ${e.image ? `<img src="${e.image}" onclick="popImg.src='${e.image}'; pop.style.display='flex'">` : ''}
+                ${e.image ? `<img src="${e.image}" onclick="document.getElementById('popImg').src='${e.image}'; document.getElementById('pop').style.display='flex'">` : ''}
                 <div class="card-body">
                     <h3 style="margin:0">${e.title}</h3>
                     <p style="color:var(--muted); font-size:14px; margin: 8px 0;">${e.desc || ''}</p>
-                    <div class="tags">${e.tags.map(t => `<span class="tag">#${t}</span>`).join('')}</div>
-                    <button class="secondary" style="margin-top:12px; color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
-                </div>`;
+                    <div class="tags">${(e.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}</div>
+                    <button class="secondary" style="margin-top:12px; width:100%; border-color: rgba(255,77,77,0.3); color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
+                </div>
+            `;
             list.appendChild(card);
         });
     }
