@@ -5,204 +5,213 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Самый топовый словарь в мире</title>
   <style>
-    :root {
-      --bg: #0b0d12;
-      --card: rgba(23, 26, 33, 0.85);
-      --text: #e6e6eb;
-      --muted: #9aa0aa;
-      --accent: #7c7cff;
-      --border: rgba(255,255,255,0.08);
+    /* ВОЗВРАЩАЕМ ТОТ САМЫЙ ДИЗАЙН ИЗ ПЕРВОЙ ВЕРСИИ */
+    :root { 
+      --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb; 
+      --muted: #9aa0aa; --accent: #7c7cff; --border: rgba(255,255,255,0.08); 
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0; min-height: 100vh;
-      font-family: Inter, system-ui, sans-serif;
-      background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%),
-                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg);
-      color: var(--text); overflow-x: hidden;
+    body { 
+      margin: 0; min-height: 100vh; font-family: Inter, system-ui, sans-serif; 
+      background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%), 
+                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg); 
+      color: var(--text); overflow-x: hidden; 
     }
-    /* Твоя анимация полосок */
-    body::before {
-      content: ""; position: fixed; inset: 0; pointer-events: none;
-      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px);
-      animation: drift 40s linear infinite;
+    body::before { 
+      content: ""; position: fixed; inset: 0; 
+      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px); 
+      pointer-events: none; animation: drift 40s linear infinite; 
     }
     @keyframes drift { from { transform: translateX(0); } to { transform: translateX(200px); } }
 
-    /* ЭКРАН ВХОДА */
+    /* ПОП-АП АВТОРИЗАЦИИ (НЕ ГЛОТАЕТ ДИЗАЙН) */
     #lockScreen {
-      position: fixed; inset: 0; z-index: 9999; background: var(--bg);
-      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px);
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(11, 13, 18, 0.95); backdrop-filter: blur(25px);
+      display: flex; align-items: center; justify-content: center;
     }
-    .lock-box { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 28px; width: 340px; text-align: center; }
+    .lock-box {
+      background: var(--card); padding: 40px; border-radius: 24px;
+      border: 1px solid var(--border); text-align: center; width: 380px;
+    }
 
-    header { padding: 20px 28px; border-bottom: 1px solid var(--border); backdrop-filter: blur(14px); background: rgba(11,13,18,0.6); position: sticky; top: 0; z-index: 10; }
-    main { padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
+    header { 
+      position: sticky; top: 0; z-index: 10; padding: 20px 28px; 
+      backdrop-filter: blur(14px); background: rgba(11,13,18,0.6); 
+      border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; 
+    }
     
-    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; backdrop-filter: blur(18px); position: sticky; top: 100px; height: fit-content; }
-    input, textarea { width: 100%; margin-top: 10px; padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; }
-    button { margin-top: 15px; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 600; width: 100%; }
+    main { width: 100vw; padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(18px); }
+    
+    label { display: block; font-size: 13px; color: var(--muted); margin-top: 12px; }
+    input, textarea { 
+      width: 100%; margin-top: 6px; padding: 10px 12px; 
+      background: rgba(12,14,19,0.8); border: 1px solid var(--border); 
+      border-radius: 12px; color: var(--text); 
+    }
+    
+    button { 
+      margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; 
+      background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; 
+    }
     button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-
-    .search { margin-bottom: 20px; width: 100%; padding: 14px; border-radius: 14px; background: rgba(12,14,19,0.6); border: 1px solid var(--border); color: #fff; }
-    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; transition: 0.3s; }
-    .card img { width: 100%; height: 180px; object-fit: cover; cursor: pointer; }
-    .card-body { padding: 15px; }
-    .tag { font-size: 11px; padding: 4px 10px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 5px; }
-
-    /* ПОПАП КАРТИНКИ */
-    #pop { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; cursor: pointer; }
+    
+    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+    .card img { width: 100%; height: 170px; object-fit: cover; background: #000; cursor: pointer; }
+    .card-body { padding: 14px 16px 16px; }
+    .tag { 
+      font-size: 12px; padding: 4px 9px; border-radius: 999px; 
+      background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 4px; 
+    }
+    
+    #pop { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); }
     #pop img { max-width: 90%; max-height: 90%; border-radius: 12px; }
 
     .hidden { display: none !important; }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
-<div id="lockScreen" class="hidden">
+  <div id="lockScreen" class="hidden">
     <div class="lock-box">
-        <h2 style="margin-top:0">Доступ к облаку</h2>
-        <input type="password" id="passInput" placeholder="Мастер-ключ" style="text-align:center">
-        <button onclick="tryLogin()">Войти</button>
+      <h2 style="margin-top:0">Доступ ограничен</h2>
+      <p style="color: var(--muted)">Введите мастер-ключ для входа</p>
+      <input type="password" id="passInput" placeholder="..." style="text-align:center">
+      <button onclick="tryLogin()" style="width:100%">Войти в облако</button>
     </div>
-</div>
+  </div>
 
-<div id="pop" onclick="this.style.display='none'"><img id="popImg"></div>
+  <div id="pop" onclick="this.style.display='none'"><img id="popImg"></div>
 
-<header>
-    <h1>Наш персональный словарь</h1>
-    <p style="color: #4caf50; margin: 5px 0 0; font-size: 13px;">● Cloud Sync: Active</p>
-</header>
+  <header>
+    <div>
+      <h1 style="margin:0">Наш персональный словарь</h1>
+      <p id="statusTxt" style="margin: 6px 0 0; color: var(--muted); font-size: 13px;">Синхронизация...</p>
+    </div>
+    <button class="secondary" onclick="logout()">Выйти</button>
+  </header>
 
-<main>
+  <main>
     <section class="panel">
-        <h2>Добавить</h2>
-        <input id="titleInput" placeholder="Название" />
-        <textarea id="descInput" rows="3" placeholder="Описание"></textarea>
-        <input id="tagsInput" placeholder="теги через запятую" />
-        <input id="imageInput" type="file" accept="image/*" />
-        <button onclick="addEntry()">Добавить</button>
-        <button class="secondary" onclick="clearAll()">Удалить всё</button>
-        <button class="secondary" onclick="logout()" style="margin-top:10px; border-color:transparent; font-size:12px; opacity:0.5">Выйти</button>
+      <h2 style="margin-top:0">Добавить выражение</h2>
+      <label>Название / выражение</label>
+      <input id="titleInput" placeholder="Например: Ну это уже клиника" />
+      <label>Описание</label>
+      <textarea id="descInput" rows="3" placeholder="Что это значит..."></textarea>
+      <label>Хештеги</label>
+      <input id="tagsInput" placeholder="#мем, #ирония" />
+      <label>Картинка</label>
+      <input id="imageInput" type="file" accept="image/*" />
+      <div style="display: flex; gap: 8px;">
+        <button onclick="addEntry()" style="flex: 2;">Добавить</button>
+        <button class="secondary" onclick="clearAll()" style="flex: 1; margin-top: 14px;">Очистить</button>
+      </div>
     </section>
 
     <section>
-        <input class="search" id="searchInput" placeholder="Поиск по названию или тегам…" oninput="render()" />
-        <div id="list" class="list"></div>
+      <input id="searchInput" oninput="render()" placeholder="Поиск по словам и тегам…" 
+             style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border); margin-bottom: 20px;"/>
+      <div id="list" class="list"></div>
     </section>
-</main>
+  </main>
 
-<script>
+  <script>
     const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
     const SKIP_HEADER = { 'ngrok-skip-browser-warning': 'true' };
     let entries = [];
 
+    // 1. ПРОВЕРКА ПРИ ЗАГРУЗКЕ
     window.onload = () => {
-        const key = localStorage.getItem('master_key');
-        if (!key) {
-            document.getElementById('lockScreen').classList.remove('hidden');
-        } else {
-            load();
-        }
+      const key = localStorage.getItem('master_key');
+      if (!key) {
+        lockScreen.classList.remove('hidden');
+      } else {
+        load();
+      }
     };
 
     async function tryLogin() {
-        const k = document.getElementById('passInput').value;
-        if (!k) return;
-        try {
-            const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': k } });
-            if (res.ok) {
-                localStorage.setItem('master_key', k);
-                document.getElementById('lockScreen').classList.add('hidden');
-                load();
-            } else { alert("Неверный мастер-ключ!"); }
-        } catch (e) { alert("Ошибка подключения к VPS."); }
+      const k = passInput.value;
+      const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': k } });
+      if (res.ok) {
+        localStorage.setItem('master_key', k);
+        lockScreen.classList.add('hidden');
+        load();
+      } else {
+        alert("Неверный ключ!");
+      }
     }
 
-    function logout() { localStorage.removeItem('master_key'); location.reload(); }
+    function logout() {
+      localStorage.removeItem('master_key');
+      location.reload();
+    }
 
     async function load() {
-        const key = localStorage.getItem('master_key');
-        try {
-            const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': key } });
-            if (res.status === 403) return logout();
-            entries = await res.json();
-            render();
-        } catch (e) { console.error("Ошибка загрузки"); }
+      const key = localStorage.getItem('master_key');
+      try {
+        const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': key } });
+        if (res.status === 403) return logout();
+        entries = await res.json();
+        statusTxt.innerText = "Cloud Sync: Active";
+        render();
+      } catch (e) {
+        statusTxt.innerText = "Ошибка подключения к VPS";
+      }
     }
 
     async function addEntry() {
-        const key = localStorage.getItem('master_key');
-        const title = document.getElementById('titleInput').value;
-        if (!title) return alert("Введите название!");
+      const key = localStorage.getItem('master_key');
+      const fd = new FormData();
+      fd.append('title', titleInput.value);
+      fd.append('desc', descInput.value);
+      fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
+      if (imageInput.files[0]) fd.append('image', imageInput.files[0]);
 
-        const fd = new FormData();
-        fd.append('title', title);
-        fd.append('desc', document.getElementById('descInput').value);
-        fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(Boolean)));
-        
-        const file = document.getElementById('imageInput').files[0];
-        if (file) fd.append('image', file);
-
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { ...SKIP_HEADER, 'x-api-key': key },
-            body: fd
-        });
-
-        if (res.ok) {
-            document.getElementById('titleInput').value = '';
-            document.getElementById('descInput').value = '';
-            document.getElementById('tagsInput').value = '';
-            document.getElementById('imageInput').value = '';
-            load();
-        }
+      await fetch(API_URL, { method: 'POST', headers: { ...SKIP_HEADER, 'x-api-key': key }, body: fd });
+      titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
+      load();
     }
 
     async function removeEntry(id) {
-        if(!confirm("Удалить?")) return;
-        const key = localStorage.getItem('master_key');
-        await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE',
-            headers: { ...SKIP_HEADER, 'x-api-key': key }
-        });
-        load();
+      const key = localStorage.getItem('master_key');
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: { ...SKIP_HEADER, 'x-api-key': key } });
+      load();
     }
 
     async function clearAll() {
-        if (!confirm("Удалить ВСЕ записи?")) return;
-        const key = localStorage.getItem('master_key');
-        await fetch(API_URL, {
-            method: 'DELETE',
-            headers: { ...SKIP_HEADER, 'x-api-key': key }
-        });
-        load();
+      if (!confirm('Точно удалить ВСЁ?')) return;
+      const key = localStorage.getItem('master_key');
+      await fetch(API_URL, { method: 'DELETE', headers: { ...SKIP_HEADER, 'x-api-key': key } });
+      load();
     }
 
     function render() {
-        const q = document.getElementById('searchInput').value.toLowerCase();
-        const list = document.getElementById('list');
-        list.innerHTML = '';
+      const q = searchInput.value.toLowerCase();
+      const list = document.getElementById('list');
+      list.innerHTML = '';
 
-        entries.filter(e => 
-            e.title.toLowerCase().includes(q) || 
-            (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
-        ).forEach(e => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                ${e.image ? `<img src="${e.image}" onclick="document.getElementById('popImg').src='${e.image}'; document.getElementById('pop').style.display='flex'">` : ''}
-                <div class="card-body">
-                    <h3 style="margin:0">${e.title}</h3>
-                    <p style="color:var(--muted); font-size:14px; margin: 8px 0;">${e.desc || ''}</p>
-                    <div class="tags">${(e.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}</div>
-                    <button class="secondary" style="margin-top:12px; width:100%; border-color: rgba(255,77,77,0.3); color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
-                </div>
-            `;
-            list.appendChild(card);
-        });
+      entries.filter(e => 
+        e.title.toLowerCase().includes(q) || 
+        (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
+      ).forEach(e => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          ${e.image ? `<img src="${e.image}" onclick="popImg.src='${e.image}'; pop.style.display='flex'">` : ''}
+          <div class="card-body">
+            <h3 style="margin:0">${e.title}</h3>
+            <p style="color:var(--muted); font-size:14px; margin: 8px 0;">${e.desc || ''}</p>
+            <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+            <button class="secondary" style="margin-top:12px; width:100%; border-color: rgba(255,77,77,0.3); color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
     }
-</script>
+  </script>
 </body>
 </html>
