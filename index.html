@@ -2,112 +2,127 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Наш персональный словарь</title>
   <style>
-    :root { --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb; --muted: #9aa0aa; --border: rgba(255,255,255,0.08); --accent: #7c7cff; }
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; font-family: 'Inter', sans-serif; background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%), radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg); color: var(--text); }
-    header { padding: 20px 28px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); backdrop-filter: blur(10px); }
-    main { padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
-    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; height: fit-content; position: sticky; top: 20px; }
-    input, textarea { width: 100%; margin-bottom: 12px; padding: 12px; background: #0c0e13; border: 1px solid var(--border); border-radius: 10px; color: #fff; }
-    button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: #fff; cursor: pointer; font-weight: 600; }
-    button.secondary { background: transparent; border: 1px solid var(--border); margin-top: 8px; font-size: 13px; color: #ff4d4d; }
-    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
-    .card img { width: 100%; height: 200px; object-fit: cover; background: #000; }
-    .card-body { padding: 18px; }
-    .tag { font-size: 11px; color: #c6c8ff; background: rgba(124,124,255,0.1); padding: 4px 10px; border-radius: 20px; margin-right: 5px; border: 1px solid rgba(124,124,255,0.2); }
-    #lockScreen { position: fixed; inset: 0; z-index: 1000; background: #0b0d12; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px); }
+    :root { 
+      --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb; 
+      --muted: #9aa0aa; --accent: #7c7cff; --border: rgba(255,255,255,0.08); 
+    }
+    * { box-sizing: border-box; transition: all 0.2s ease; }
+    body { 
+      margin: 0; min-height: 100vh; font-family: 'Inter', sans-serif; 
+      background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%), 
+                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg); 
+      color: var(--text); overflow-x: hidden;
+    }
+    header { padding: 24px 32px; border-bottom: 1px solid var(--border); backdrop-filter: blur(12px); }
+    header h1 { margin: 0; font-size: 28px; font-weight: 800; }
+    header p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+    main { padding: 32px; display: grid; grid-template-columns: 360px 1fr; gap: 32px; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 24px; height: fit-content; position: sticky; top: 32px; backdrop-filter: blur(20px); }
+    
+    label { display: block; font-size: 13px; color: var(--muted); margin: 16px 0 6px; }
+    input, textarea { width: 100%; padding: 12px 16px; background: #0c0e13; border: 1px solid var(--border); border-radius: 12px; color: #fff; font-size: 14px; }
+    
+    button { width: 100%; margin-top: 20px; padding: 12px; border-radius: 12px; border: none; background: #8b8bff; color: #fff; cursor: pointer; font-weight: 600; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.secondary { background: transparent; border: 1px solid var(--border); color: #ff4d4d; margin-top: 12px; }
+
+    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; }
+    .card img { width: 100%; height: 220px; object-fit: cover; background: #000; }
+    .card-body { padding: 20px; }
+    .tag { font-size: 12px; color: #c6c8ff; background: rgba(124,124,255,0.1); padding: 5px 12px; border-radius: 20px; margin-right: 6px; border: 1px solid rgba(124,124,255,0.2); }
+
+    #lockScreen { position: fixed; inset: 0; z-index: 1000; background: #0b0d12; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(25px); }
     .hidden { display: none !important; }
-    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
 
 <div id="lockScreen">
-  <div style="text-align: center; background: var(--card); padding: 40px; border-radius: 24px; border: 1px solid var(--border); width: 320px;">
-    <h3 style="margin-top:0">Доступ к облаку</h3>
+  <div style="text-align: center; background: var(--card); padding: 48px; border-radius: 28px; border: 1px solid var(--border); width: 340px;">
+    <h2 style="margin:0 0 20px">Доступ к облаку</h2>
     <input type="password" id="passInput" placeholder="Мастер-ключ" style="text-align:center">
-    <button onclick="tryLogin()">Войти</button>
+    <button id="loginBtn" onclick="tryLogin()">Войти в систему</button>
   </div>
 </div>
 
 <header>
-  <div style="font-weight: 800; font-size: 20px;">Наш персональный словарь</div>
-  <button onclick="logout()" style="width:auto; padding: 8px 16px; background: transparent; border: 1px solid var(--border);">Выйти</button>
+  <h1>Наш персональный словарь</h1>
+  <p>Самая крутая база слов, мемов и прочего</p>
 </header>
 
 <main>
   <aside class="panel">
-    <h3 style="margin-top:0">Новое выражение</h3>
-    <input id="titleInput" placeholder="Что пишем?">
-    <textarea id="descInput" placeholder="Описание..."></textarea>
-    <input id="tagsInput" placeholder="Теги (через запятую)">
-    <input type="file" id="imageInput">
-    <button onclick="addEntry()">Сохранить</button>
+    <h2>Добавить выражение</h2>
+    <label>Название</label><input id="titleInput">
+    <label>Описание</label><textarea id="descInput" rows="3"></textarea>
+    <label>Хештеги</label><input id="tagsInput" placeholder="#мем, #ирония">
+    <label>Картинка</label><input type="file" id="imageInput">
+    <button id="addBtn" onclick="addEntry()">Сохранить</button>
   </aside>
   <section>
-    <input id="searchInput" oninput="render()" placeholder="Быстрый поиск по базе..." style="margin-bottom: 24px;">
+    <input id="searchInput" oninput="render()" placeholder="Поиск по словам..." style="margin-bottom: 28px;">
     <div id="list" class="list"></div>
   </section>
 </main>
 
 <script>
   const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
-  const HEADERS = () => ({ 'ngrok-skip-browser-warning': 'true', 'x-api-key': localStorage.getItem('cloud_key') });
-  let entries = [];
+  const getHeaders = () => ({ 'ngrok-skip-browser-warning': 'true', 'x-api-key': localStorage.getItem('master_key') });
 
-  window.onload = () => { if (localStorage.getItem('cloud_key')) { document.getElementById('lockScreen').classList.add('hidden'); load(); } };
+  window.onload = () => { if (localStorage.getItem('master_key')) { document.getElementById('lockScreen').classList.add('hidden'); load(); } };
 
   async function tryLogin() {
+    const btn = document.getElementById('loginBtn');
     const k = document.getElementById('passInput').value;
-    const res = await fetch(API_URL, { headers: { 'ngrok-skip-browser-warning': 'true', 'x-api-key': k } });
-    if (res.ok) { localStorage.setItem('cloud_key', k); document.getElementById('lockScreen').classList.add('hidden'); load(); }
-    else alert("Ключ не подходит");
+    btn.disabled = true; btn.innerText = 'Проверка...';
+    try {
+      const res = await fetch(API_URL, { headers: { 'ngrok-skip-browser-warning': 'true', 'x-api-key': k } });
+      if (res.ok) { localStorage.setItem('master_key', k); document.getElementById('lockScreen').classList.add('hidden'); load(); }
+      else alert("Ключ не подходит!");
+    } catch (e) { alert("Ошибка сервера!"); }
+    btn.disabled = false; btn.innerText = 'Войти в систему';
   }
 
-  function logout() { localStorage.removeItem('cloud_key'); location.reload(); }
-
   async function load() {
-    try {
-      const res = await fetch(API_URL, { headers: HEADERS() });
-      if (res.status === 403) return logout();
-      entries = await res.json();
-      render();
-    } catch (e) { console.error("Ошибка сети"); }
+    const res = await fetch(API_URL, { headers: getHeaders() });
+    const entries = await res.json();
+    render(entries);
   }
 
   async function addEntry() {
+    const btn = document.getElementById('addBtn');
+    btn.disabled = true; btn.innerText = 'Сохранение...';
     const fd = new FormData();
     fd.append('title', document.getElementById('titleInput').value);
     fd.append('desc', document.getElementById('descInput').value);
-    fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t=>t.trim()).filter(Boolean)));
+    fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t=>t.trim().replace('#',''))));
     if (document.getElementById('imageInput').files[0]) fd.append('image', document.getElementById('imageInput').files[0]);
 
-    const res = await fetch(API_URL, { method: 'POST', headers: HEADERS(), body: fd });
-    if (res.ok) { document.getElementById('titleInput').value = ''; document.getElementById('descInput').value = ''; load(); }
+    await fetch(API_URL, { method: 'POST', headers: getHeaders(), body: fd });
+    btn.disabled = false; btn.innerText = 'Сохранить';
+    location.reload();
   }
 
   async function removeEntry(id) {
-    if (confirm('Удалить?')) {
-      await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: HEADERS() });
-      load();
-    }
+    if (confirm('Удалить?')) { await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: getHeaders() }); load(); }
   }
 
-  function render() {
+  function render(data) {
     const q = document.getElementById('searchInput').value.toLowerCase();
     const list = document.getElementById('list');
     list.innerHTML = '';
-    entries.filter(e => e.title.toLowerCase().includes(q)).forEach(e => {
+    data.filter(e => e.title.toLowerCase().includes(q)).forEach(e => {
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
         ${e.image ? `<img src="${e.image}">` : ''}
         <div class="card-body">
-          <h3 style="margin:0">${e.title}</h3>
-          <p style="color:var(--muted); font-size:14px; margin: 10px 0;">${e.desc || ''}</p>
+          <h3>${e.title}</h3><p>${e.desc || ''}</p>
           <div>${(e.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}</div>
           <button class="secondary" onclick="removeEntry('${e.id}')">Удалить</button>
         </div>`;
