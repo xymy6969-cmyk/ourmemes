@@ -36,7 +36,6 @@
 
     /* АНИМАЦИЯ КНОПКИ АВТОРИЗАЦИИ */
     .auth-btn {
-      position: relative;
       animation: pulse-border 2s infinite;
       transition: all 0.3s ease;
     }
@@ -52,7 +51,13 @@
     
     label { display: block; font-size: 13px; color: var(--muted); margin-top: 12px; }
     input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); }
-    button { margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; }
+    
+    button { 
+      margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; 
+      background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; 
+      cursor: pointer; font-weight: 500; transition: transform .15s ease;
+    }
+    button:active { transform: scale(0.98); }
     button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
     
     .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
@@ -60,7 +65,7 @@
     .card img { width: 100%; height: 170px; object-fit: cover; background: #000; }
     .card-body { padding: 14px 16px 16px; }
     .tag { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 4px; }
-    .actions { margin-top: 12px; }
+    
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -68,7 +73,7 @@
   <header>
     <div>
       <h1>Наш персональный словарь</h1>
-      <p style="margin: 6px 0 0; color: var(--muted); font-size: 14px;">Самая крутая база слов, мемов и прочего</p>
+      <p style="margin: 6px 0 0; color: var(--muted);">Самая крутая база слов, мемов и прочего</p>
     </div>
     <button class="secondary auth-btn" onclick="auth()">Авторизация</button>
   </header>
@@ -78,14 +83,20 @@
       <h2>Добавить выражение</h2>
       <label>Название / выражение</label>
       <input id="titleInput" placeholder="Например: Ну это уже клиника" />
+      
       <label>Описание</label>
       <textarea id="descInput" rows="3" placeholder="Что это значит, где используется"></textarea>
+      
       <label>Хештеги (через запятую)</label>
       <input id="tagsInput" placeholder="#мем, #ирония" />
+      
       <label>Картинка</label>
       <input id="imageInput" type="file" accept="image/*" />
-      <button onclick="addEntry()">Добавить</button>
-      <button class="secondary" onclick="clearAll()">Очистить всё</button>
+      
+      <div style="display: flex; gap: 8px;">
+        <button onclick="addEntry()" style="flex: 1;">Добавить</button>
+        <button class="secondary" onclick="clearAll()" style="flex: 1; margin-top: 14px;">Очистить всё</button>
+      </div>
     </section>
 
     <section>
@@ -113,27 +124,32 @@
         const res = await fetch(API_URL, { headers: SKIP_WARN });
         entries = await res.json();
         render();
-      } catch (e) { console.error("Ошибка сети"); }
+      } catch (e) { console.error("Сервер недоступен"); }
     }
 
     async function addEntry() {
       const key = localStorage.getItem('cloud_key');
       if (!key) return auth();
 
+      const title = titleInput.value.trim();
+      if (!title) return;
+
       const fd = new FormData();
-      fd.append('title', titleInput.value);
+      fd.append('title', title);
       fd.append('desc', descInput.value);
       fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
       if (imageInput.files[0]) fd.append('image', imageInput.files[0]);
 
-      await fetch(API_URL, {
+      const res = await fetch(API_URL, {
         method: 'POST',
         headers: { ...SKIP_WARN, 'x-api-key': key },
         body: fd
       });
 
-      titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
-      load();
+      if (res.ok) {
+        titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
+        load();
+      } else { alert("Ошибка ключа!"); }
     }
 
     async function removeEntry(id) {
@@ -146,7 +162,7 @@
     }
 
     async function clearAll() {
-      if (!confirm('Точно удалить всё?')) return;
+      if (!confirm('Точно удалить ВЕСЬ словарь из облака?')) return;
       const key = localStorage.getItem('cloud_key');
       await fetch(API_URL, { 
         method: 'DELETE', 
@@ -160,7 +176,10 @@
       const list = document.getElementById('list');
       list.innerHTML = '';
 
-      entries.filter(e => e.title.toLowerCase().includes(q)).forEach(e => {
+      entries.filter(e => 
+        e.title.toLowerCase().includes(q) || 
+        (e.desc && e.desc.toLowerCase().includes(q))
+      ).forEach(e => {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
@@ -169,7 +188,7 @@
             <h3>${e.title}</h3>
             <p>${e.desc || ''}</p>
             <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-            <div class="actions">
+            <div style="margin-top:12px;">
               <button class="secondary" onclick="removeEntry('${e.id}')">Удалить</button>
             </div>
           </div>
