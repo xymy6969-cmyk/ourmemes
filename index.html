@@ -1,217 +1,130 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Самый топовый словарь в мире</title>
-  <style>
-    /* ВОЗВРАЩАЕМ ТОТ САМЫЙ ДИЗАЙН ИЗ ПЕРВОЙ ВЕРСИИ */
-    :root { 
-      --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb; 
-      --muted: #9aa0aa; --accent: #7c7cff; --border: rgba(255,255,255,0.08); 
-    }
-    * { box-sizing: border-box; }
-    body { 
-      margin: 0; min-height: 100vh; font-family: Inter, system-ui, sans-serif; 
-      background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%), 
-                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg); 
-      color: var(--text); overflow-x: hidden; 
-    }
-    body::before { 
-      content: ""; position: fixed; inset: 0; 
-      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px); 
-      pointer-events: none; animation: drift 40s linear infinite; 
-    }
-    @keyframes drift { from { transform: translateX(0); } to { transform: translateX(200px); } }
+// ЗАМЕНИ НА СВОЙ АДРЕС NGROK!
+const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
+const SKIP_HEADER = { 'ngrok-skip-browser-warning': 'true' };
+let entries = [];
 
-    /* ПОП-АП АВТОРИЗАЦИИ (НЕ ГЛОТАЕТ ДИЗАЙН) */
-    #lockScreen {
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(11, 13, 18, 0.95); backdrop-filter: blur(25px);
-      display: flex; align-items: center; justify-content: center;
-    }
-    .lock-box {
-      background: var(--card); padding: 40px; border-radius: 24px;
-      border: 1px solid var(--border); text-align: center; width: 380px;
-    }
-
-    header { 
-      position: sticky; top: 0; z-index: 10; padding: 20px 28px; 
-      backdrop-filter: blur(14px); background: rgba(11,13,18,0.6); 
-      border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; 
-    }
-    
-    main { width: 100vw; padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
-    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(18px); }
-    
-    label { display: block; font-size: 13px; color: var(--muted); margin-top: 12px; }
-    input, textarea { 
-      width: 100%; margin-top: 6px; padding: 10px 12px; 
-      background: rgba(12,14,19,0.8); border: 1px solid var(--border); 
-      border-radius: 12px; color: var(--text); 
-    }
-    
-    button { 
-      margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; 
-      background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; 
-    }
-    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    
-    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
-    .card img { width: 100%; height: 170px; object-fit: cover; background: #000; cursor: pointer; }
-    .card-body { padding: 14px 16px 16px; }
-    .tag { 
-      font-size: 12px; padding: 4px 9px; border-radius: 999px; 
-      background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 4px; 
-    }
-    
-    #pop { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(10px); }
-    #pop img { max-width: 90%; max-height: 90%; border-radius: 12px; }
-
-    .hidden { display: none !important; }
-    @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
-  </style>
-</head>
-<body>
-
-  <div id="lockScreen" class="hidden">
-    <div class="lock-box">
-      <h2 style="margin-top:0">Доступ ограничен</h2>
-      <p style="color: var(--muted)">Введите мастер-ключ для входа</p>
-      <input type="password" id="passInput" placeholder="..." style="text-align:center">
-      <button onclick="tryLogin()" style="width:100%">Войти в облако</button>
-    </div>
-  </div>
-
-  <div id="pop" onclick="this.style.display='none'"><img id="popImg"></div>
-
-  <header>
-    <div>
-      <h1 style="margin:0">Наш персональный словарь</h1>
-      <p id="statusTxt" style="margin: 6px 0 0; color: var(--muted); font-size: 13px;">Синхронизация...</p>
-    </div>
-    <button class="secondary" onclick="logout()">Выйти</button>
-  </header>
-
-  <main>
-    <section class="panel">
-      <h2 style="margin-top:0">Добавить выражение</h2>
-      <label>Название / выражение</label>
-      <input id="titleInput" placeholder="Например: Ну это уже клиника" />
-      <label>Описание</label>
-      <textarea id="descInput" rows="3" placeholder="Что это значит..."></textarea>
-      <label>Хештеги</label>
-      <input id="tagsInput" placeholder="#мем, #ирония" />
-      <label>Картинка</label>
-      <input id="imageInput" type="file" accept="image/*" />
-      <div style="display: flex; gap: 8px;">
-        <button onclick="addEntry()" style="flex: 2;">Добавить</button>
-        <button class="secondary" onclick="clearAll()" style="flex: 1; margin-top: 14px;">Очистить</button>
-      </div>
-    </section>
-
-    <section>
-      <input id="searchInput" oninput="render()" placeholder="Поиск по словам и тегам…" 
-             style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--border); margin-bottom: 20px;"/>
-      <div id="list" class="list"></div>
-    </section>
-  </main>
-
-  <script>
-    const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
-    const SKIP_HEADER = { 'ngrok-skip-browser-warning': 'true' };
-    let entries = [];
-
-    // 1. ПРОВЕРКА ПРИ ЗАГРУЗКЕ
-    window.onload = () => {
-      const key = localStorage.getItem('master_key');
-      if (!key) {
-        lockScreen.classList.remove('hidden');
-      } else {
+// 1. ПРОВЕРКА ПРИ ЗАГРУЗКЕ
+window.onload = () => {
+    const key = localStorage.getItem('master_key');
+    if (!key) {
+        document.getElementById('lockScreen').classList.remove('hidden');
+    } else {
         load();
-      }
-    };
-
-    async function tryLogin() {
-      const k = passInput.value;
-      const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': k } });
-      if (res.ok) {
-        localStorage.setItem('master_key', k);
-        lockScreen.classList.add('hidden');
-        load();
-      } else {
-        alert("Неверный ключ!");
-      }
     }
+};
 
-    function logout() {
-      localStorage.removeItem('master_key');
-      location.reload();
+// 2. ВХОД
+async function tryLogin() {
+    const k = document.getElementById('passInput').value;
+    if (!k) return;
+    
+    try {
+        const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': k } });
+        if (res.ok) {
+            localStorage.setItem('master_key', k);
+            document.getElementById('lockScreen').classList.add('hidden');
+            load();
+        } else {
+            alert("Неверный мастер-ключ!");
+        }
+    } catch (e) {
+        alert("Ошибка подключения. Проверь ngrok на VPS.");
     }
+}
 
-    async function load() {
-      const key = localStorage.getItem('master_key');
-      try {
+// 3. ВЫХОД
+function logout() {
+    localStorage.removeItem('master_key');
+    location.reload();
+}
+
+// 4. ЗАГРУЗКА ДАННЫХ
+async function load() {
+    const key = localStorage.getItem('master_key');
+    try {
         const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': key } });
         if (res.status === 403) return logout();
         entries = await res.json();
-        statusTxt.innerText = "Cloud Sync: Active";
         render();
-      } catch (e) {
-        statusTxt.innerText = "Ошибка подключения к VPS";
-      }
+    } catch (e) {
+        console.error("Ошибка загрузки");
     }
+}
 
-    async function addEntry() {
-      const key = localStorage.getItem('master_key');
-      const fd = new FormData();
-      fd.append('title', titleInput.value);
-      fd.append('desc', descInput.value);
-      fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
-      if (imageInput.files[0]) fd.append('image', imageInput.files[0]);
+// 5. ДОБАВЛЕНИЕ ЗАПИСИ
+async function addEntry() {
+    const key = localStorage.getItem('master_key');
+    const title = document.getElementById('titleInput').value;
+    if (!title) return alert("Введите название!");
 
-      await fetch(API_URL, { method: 'POST', headers: { ...SKIP_HEADER, 'x-api-key': key }, body: fd });
-      titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
-      load();
+    const fd = new FormData();
+    fd.append('title', title);
+    fd.append('desc', document.getElementById('descInput').value);
+    fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(Boolean)));
+    
+    const file = document.getElementById('imageInput').files[0];
+    if (file) fd.append('image', file);
+
+    const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { ...SKIP_HEADER, 'x-api-key': key },
+        body: fd
+    });
+
+    if (res.ok) {
+        document.getElementById('titleInput').value = '';
+        document.getElementById('descInput').value = '';
+        document.getElementById('tagsInput').value = '';
+        document.getElementById('imageInput').value = '';
+        load();
     }
+}
 
-    async function removeEntry(id) {
-      const key = localStorage.getItem('master_key');
-      await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers: { ...SKIP_HEADER, 'x-api-key': key } });
-      load();
-    }
+// 6. УДАЛЕНИЕ
+async function removeEntry(id) {
+    const key = localStorage.getItem('master_key');
+    const res = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: { ...SKIP_HEADER, 'x-api-key': key }
+    });
+    if (res.ok) load();
+}
 
-    async function clearAll() {
-      if (!confirm('Точно удалить ВСЁ?')) return;
-      const key = localStorage.getItem('master_key');
-      await fetch(API_URL, { method: 'DELETE', headers: { ...SKIP_HEADER, 'x-api-key': key } });
-      load();
-    }
+// 7. ОЧИСТКА ВСЕГО
+async function clearAll() {
+    if (!confirm("Удалить ВСЕ записи?")) return;
+    const key = localStorage.getItem('master_key');
+    await fetch(API_URL, {
+        method: 'DELETE',
+        headers: { ...SKIP_HEADER, 'x-api-key': key }
+    });
+    load();
+}
 
-    function render() {
-      const q = searchInput.value.toLowerCase();
-      const list = document.getElementById('list');
-      list.innerHTML = '';
+// 8. ОТРИСОВКА (ДИЗАЙН КАРТОЧЕК)
+function render() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const list = document.getElementById('list');
+    list.innerHTML = '';
 
-      entries.filter(e => 
+    entries.filter(e => 
         e.title.toLowerCase().includes(q) || 
         (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
-      ).forEach(e => {
+    ).forEach(e => {
         const card = document.createElement('div');
         card.className = 'card';
+        // Добавляем timestamp к картинке, чтобы браузер не кешировал "битую" версию
+        const imgPath = e.image ? `${e.image}?t=${Date.now()}` : null;
+
         card.innerHTML = `
-          ${e.image ? `<img src="${e.image}" onclick="popImg.src='${e.image}'; pop.style.display='flex'">` : ''}
-          <div class="card-body">
-            <h3 style="margin:0">${e.title}</h3>
-            <p style="color:var(--muted); font-size:14px; margin: 8px 0;">${e.desc || ''}</p>
-            <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-            <button class="secondary" style="margin-top:12px; width:100%; border-color: rgba(255,77,77,0.3); color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
-          </div>
+            ${imgPath ? `<img src="${imgPath}" onclick="popImg.src='${imgPath}'; document.getElementById('pop').style.display='flex'">` : ''}
+            <div class="card-body">
+                <h3 style="margin:0">${e.title}</h3>
+                <p style="color:var(--muted); font-size:14px; margin: 8px 0;">${e.desc || ''}</p>
+                <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+                <button class="secondary" style="margin-top:12px; width:100%; border-color: rgba(255,77,77,0.3); color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
+            </div>
         `;
         list.appendChild(card);
-      });
-    }
-  </script>
-</body>
-</html>
+    });
+}
