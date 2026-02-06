@@ -92,7 +92,7 @@
 <header>
   <div>
     <h1>Словарь</h1>
-    <p style="color: #4caf50; margin: 5px 0 0; font-size: 11px; font-weight: bold;">● Cloud Sync: Active (Base64)</p>
+    <p style="color: #4caf50; margin: 5px 0 0; font-size: 11px; font-weight: bold;">● Cloud Sync: Binary Mode</p>
   </div>
   <div class="header-actions">
     <button class="btn-header btn-clear-db" onclick="secureClearAll()">Очистить БД</button>
@@ -160,55 +160,59 @@
 
   async function addEntry() {
     const key = localStorage.getItem('master_key');
-    const title = document.getElementById('titleInput').value;
-    if (!title) return alert("Введите название!");
+    const titleInput = document.getElementById('titleInput');
+    const descInput = document.getElementById('descInput');
+    const tagsInput = document.getElementById('tagsInput');
+    const imageInput = document.getElementById('imageInput');
+
+    if (!titleInput.value) return alert("Введите название!");
 
     const fd = new FormData();
-    fd.append('title', title);
-    fd.append('desc', document.getElementById('descInput').value);
-    fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(Boolean)));
+    fd.append('title', titleInput.value);
+    fd.append('desc', descInput.value);
+    fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
     
-    const file = document.getElementById('imageInput').files[0];
-    
-    // Если есть файл, конвертируем в Base64 перед отправкой (гарантирует совместимость)
+    // Передаем именно файл, а не Base64. Это экономит место и обходит лимиты серверов.
+    const file = imageInput.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        fd.append('image', e.target.result);
-        await sendData(fd, key);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      await sendData(fd, key);
+      fd.append('image', file);
     }
-  }
 
-  async function sendData(fd, key) {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { ...SKIP_HEADER, 'x-api-key': key },
-      body: fd
-    });
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { ...SKIP_HEADER, 'x-api-key': key },
+        body: fd
+      });
 
-    if (res.ok) {
-      document.getElementById('titleInput').value = '';
-      document.getElementById('descInput').value = '';
-      document.getElementById('tagsInput').value = '';
-      document.getElementById('imageInput').value = '';
-      load();
-    } else {
-      alert('Ошибка сохранения. Возможно, файл слишком большой.');
+      if (res.ok) {
+        titleInput.value = '';
+        descInput.value = '';
+        tagsInput.value = '';
+        imageInput.value = '';
+        load();
+      } else {
+        const errText = await res.text();
+        alert(`Ошибка сервера: ${res.status}. ${errText.includes('large') ? 'Файл слишком тяжелый для сервера.' : 'Проверьте логи сервера.'}`);
+      }
+    } catch (e) {
+      alert("Сетевая ошибка при отправке.");
     }
   }
 
   async function removeEntry(id) {
     if(!confirm("Удалить запись?")) return;
     const key = localStorage.getItem('master_key');
-    await fetch(`${API_URL}/${id}`, {
-      method: 'DELETE',
-      headers: { ...SKIP_HEADER, 'x-api-key': key }
-    });
-    load();
+    try {
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: { ...SKIP_HEADER, 'x-api-key': key }
+      });
+      if (res.ok) load();
+      else alert("Не удалось удалить запись на сервере.");
+    } catch (e) {
+      alert("Ошибка при удалении.");
+    }
   }
 
   async function secureClearAll() {
@@ -221,14 +225,18 @@
       return;
     }
 
-    const res = await fetch(API_URL, {
-      method: 'DELETE',
-      headers: { ...SKIP_HEADER, 'x-api-key': key }
-    });
+    try {
+      const res = await fetch(API_URL, {
+        method: 'DELETE',
+        headers: { ...SKIP_HEADER, 'x-api-key': key }
+      });
 
-    if (res.ok) {
-      alert("База данных очищена.");
-      load();
+      if (res.ok) {
+        alert("База данных очищена.");
+        load();
+      }
+    } catch (e) {
+      alert("Ошибка при очистке БД.");
     }
   }
 
@@ -237,12 +245,16 @@
     const list = document.getElementById('list');
     list.innerHTML = '';
 
-    entries.filter(e => 
+    // Сортируем: новые сверху
+    const filtered = entries.filter(e => 
       e.title.toLowerCase().includes(q) || 
       (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
-    ).forEach(e => {
+    );
+
+    filtered.forEach(e => {
       const card = document.createElement('div');
       card.className = 'card';
+      // Если сервер возвращает относительный путь или Base64, src подхватит
       const imgHtml = e.image 
         ? `<img src="${e.image}" onclick="document.getElementById('popImg').src='${e.image}'; document.getElementById('pop').style.display='flex'">` 
         : '';
