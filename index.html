@@ -5,62 +5,92 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Самый топовый словарь в мире</title>
   <style>
-    :root { --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb; --muted: #9aa0aa; --accent: #7c7cff; --border: rgba(255,255,255,0.08); }
+    :root {
+      --bg: #0b0d12;
+      --card: rgba(23, 26, 33, 0.85);
+      --text: #e6e6eb;
+      --muted: #9aa0aa;
+      --accent: #7c7cff;
+      --border: rgba(255,255,255,0.08);
+    }
     * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; font-family: Inter, system-ui, sans-serif; background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%), radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg); color: var(--text); overflow-x: hidden; }
-    body::before { content: ""; position: fixed; inset: 0; background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px); pointer-events: none; animation: drift 40s linear infinite; }
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, sans-serif;
+      background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%),
+                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg);
+      color: var(--text); overflow-x: hidden;
+    }
+    body::before {
+      content: ""; position: fixed; inset: 0;
+      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px);
+      pointer-events: none; animation: drift 40s linear infinite;
+    }
     @keyframes drift { from { transform: translateX(0); } to { transform: translateX(200px); } }
     
-    header { position: sticky; top: 0; z-index: 10; padding: 20px 28px; backdrop-filter: blur(14px); background: rgba(11,13,18,0.6); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    
-    /* АНИМАЦИЯ АВТОРИЗАЦИИ */
+    header {
+      position: sticky; top: 0; z-index: 10; padding: 20px 28px;
+      backdrop-filter: blur(14px); background: rgba(11,13,18,0.6);
+      border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
+    }
+
+    /* АНИМАЦИЯ КНОПКИ АВТОРИЗАЦИИ */
     .auth-btn {
       position: relative;
-      overflow: hidden;
+      animation: pulse-border 2s infinite;
       transition: all 0.3s ease;
-      animation: pulse 2s infinite;
     }
-    @keyframes pulse {
+    @keyframes pulse-border {
       0% { box-shadow: 0 0 0 0 rgba(124, 124, 255, 0.4); }
       70% { box-shadow: 0 0 0 10px rgba(124, 124, 255, 0); }
       100% { box-shadow: 0 0 0 0 rgba(124, 124, 255, 0); }
     }
-    .auth-btn:active { transform: scale(0.95); }
 
     main { width: 100vw; padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
     .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(18px); animation: floatIn 0.6s ease both; }
     @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     
-    input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); margin-bottom: 12px; }
-    button { padding: 10px 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-top: 12px; }
+    input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); }
+    button { margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; }
     button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
     
     .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; animation: floatIn 0.5s ease both; }
-    .card img { width: 100%; height: 170px; object-fit: cover; background: #000; display: block; }
-    .card-body { padding: 16px; }
-    .tag { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; margin-right: 4px; border: 1px solid rgba(124,124,255,0.2); }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; backdrop-filter: blur(14px); }
+    .card img { width: 100%; height: 170px; object-fit: cover; background: #000; }
+    .card-body { padding: 14px 16px 16px; }
+    .tag { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 4px; }
+    .actions { margin-top: 12px; }
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <header>
-    <h1>Наш персональный словарь</h1>
-    <button class="secondary auth-btn" onclick="setAuth()">Авторизация</button>
+    <div>
+      <h1>Наш персональный словарь</h1>
+      <p style="margin: 6px 0 0; color: var(--muted); font-size: 14px;">Самая крутая база слов, мемов и прочего</p>
+    </div>
+    <button class="secondary auth-btn" onclick="auth()">Авторизация</button>
   </header>
 
   <main>
     <section class="panel">
-      <h2>Добавить запись</h2>
-      <input id="titleInput" placeholder="Название" />
-      <textarea id="descInput" placeholder="Описание"></textarea>
-      <input id="tagsInput" placeholder="Теги через запятую" />
+      <h2>Добавить выражение</h2>
+      <label>Название / выражение</label>
+      <input id="titleInput" placeholder="Например: Ну это уже клиника" />
+      <label>Описание</label>
+      <textarea id="descInput" rows="3" placeholder="Что это значит, где используется"></textarea>
+      <label>Хештеги (через запятую)</label>
+      <input id="tagsInput" placeholder="#мем, #ирония" />
+      <label>Картинка</label>
       <input id="imageInput" type="file" accept="image/*" />
       <button onclick="addEntry()">Добавить</button>
+      <button class="secondary" onclick="clearAll()">Очистить всё</button>
     </section>
 
     <section>
-      <input id="searchInput" placeholder="Поиск…" oninput="render()" style="width:100%; margin-bottom:20px; padding:12px; border-radius:12px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--border);"/>
+      <input id="searchInput" class="search" placeholder="Поиск по словам и тегам…" oninput="render()" 
+             style="width: 100%; padding: 12px 14px; border-radius: 14px; background: rgba(12,14,19,0.6); border: 1px solid var(--border); color: var(--text); margin-bottom: 18px;"/>
       <div id="list" class="list"></div>
     </section>
   </main>
@@ -70,10 +100,10 @@
     const SKIP_WARN = { 'ngrok-skip-browser-warning': 'true' };
     let entries = [];
 
-    function setAuth() {
+    function auth() {
       const k = prompt("Введите MASTER_KEY:");
       if (k) {
-        localStorage.setItem('api_key', k);
+        localStorage.setItem('cloud_key', k);
         load();
       }
     }
@@ -87,8 +117,8 @@
     }
 
     async function addEntry() {
-      const key = localStorage.getItem('api_key');
-      if (!key) return setAuth();
+      const key = localStorage.getItem('cloud_key');
+      if (!key) return auth();
 
       const fd = new FormData();
       fd.append('title', titleInput.value);
@@ -107,7 +137,7 @@
     }
 
     async function removeEntry(id) {
-      const key = localStorage.getItem('api_key');
+      const key = localStorage.getItem('cloud_key');
       await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
         headers: { ...SKIP_WARN, 'x-api-key': key }
@@ -115,21 +145,33 @@
       load();
     }
 
+    async function clearAll() {
+      if (!confirm('Точно удалить всё?')) return;
+      const key = localStorage.getItem('cloud_key');
+      await fetch(API_URL, { 
+        method: 'DELETE', 
+        headers: { ...SKIP_WARN, 'x-api-key': key } 
+      });
+      load();
+    }
+
     function render() {
-      const list = document.getElementById('list');
       const q = searchInput.value.toLowerCase();
+      const list = document.getElementById('list');
       list.innerHTML = '';
 
       entries.filter(e => e.title.toLowerCase().includes(q)).forEach(e => {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
-          ${e.image ? `<img src="${e.image}" onerror="this.src='https://via.placeholder.com/300x170?text=Error+Loading+Image'">` : ''}
+          ${e.image ? `<img src="${e.image}" onerror="this.style.display='none'">` : ''}
           <div class="card-body">
             <h3>${e.title}</h3>
             <p>${e.desc || ''}</p>
             <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-            <button class="secondary" style="margin-top:10px" onclick="removeEntry('${e.id}')">Удалить</button>
+            <div class="actions">
+              <button class="secondary" onclick="removeEntry('${e.id}')">Удалить</button>
+            </div>
           </div>
         `;
         list.appendChild(card);
