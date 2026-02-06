@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Наш персональный словарь</title>
+  <title>Самый топовый словарь в мире</title>
   <style>
     :root {
       --bg: #0b0d12;
@@ -13,107 +13,31 @@
       --accent: #7c7cff;
       --border: rgba(255,255,255,0.08);
     }
-
     * { box-sizing: border-box; }
-
     body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 0; min-height: 100vh;
+      font-family: Inter, system-ui, sans-serif;
       background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%),
-                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%),
-                  var(--bg);
-      color: var(--text);
-      overflow-x: hidden;
+                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg);
+      color: var(--text); overflow-x: hidden;
     }
-
     header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      padding: 20px 28px;
-      backdrop-filter: blur(14px);
-      background: rgba(11,13,18,0.6);
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      position: sticky; top: 0; z-index: 10; padding: 20px 28px;
+      backdrop-filter: blur(14px); background: rgba(11,13,18,0.6);
+      border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
     }
-
-    header h1 { margin: 0; font-size: 24px; }
-
-    main {
-      width: 100%;
-      padding: 28px;
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 28px;
-    }
-
-    .panel {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 18px;
-      backdrop-filter: blur(18px);
-    }
-
-    input, textarea {
-      width: 100%;
-      margin: 6px 0 12px;
-      padding: 10px;
-      background: rgba(12,14,19,0.8);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: none;
-      background: linear-gradient(135deg, #7c7cff, #9b7cff);
-      color: #fff;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .search {
-      width: 100%;
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(12,14,19,0.6);
-      border: 1px solid var(--border);
-      color: var(--text);
-      margin-bottom: 20px;
-    }
-
-    .list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 18px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      overflow: hidden;
-    }
-
-    .card img { width: 100%; height: 180px; object-fit: cover; }
+    main { width: 100%; padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(18px); }
+    label { display: block; font-size: 13px; color: var(--muted); margin-top: 12px; }
+    input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); }
+    button { margin-top: 14px; width: 100%; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 600; }
+    .search { width: 100%; padding: 14px; border-radius: 14px; background: rgba(12,14,19,0.6); border: 1px solid var(--border); color: var(--text); margin-bottom: 20px; }
+    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
+    .card img { width: 100%; height: 170px; object-fit: cover; }
     .card-body { padding: 16px; }
-    .tag { font-size: 11px; padding: 4px 8px; border-radius: 10px; background: rgba(124,124,255,0.1); color: #c6c8ff; margin-right: 5px; }
-    
-    .del-btn {
-      background: #ff4d4d;
-      width: auto;
-      padding: 6px 12px;
-      font-size: 12px;
-      margin-top: 15px;
-    }
-
+    .tag { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; margin-right: 5px; border: 1px solid rgba(124,124,255,0.25); }
+    .del-btn { background: #ff4d4d; width: auto; margin-top: 10px; font-size: 12px; padding: 6px 12px; }
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -121,138 +45,125 @@
 
   <header>
     <div>
-      <h1>Наш словарь</h1>
-      <span style="font-size: 12px; color: var(--muted)">Cloud Sync Active</span>
+      <h1>Наш персональный словарь</h1>
+      <p style="margin: 5px 0 0; font-size: 14px; color: var(--muted)">Cloud Sync Active</p>
     </div>
-    <button id="loginStatus" style="width: auto; padding: 8px 15px; background: var(--border)" onclick="resetAuth()">Выйти</button>
+    <button id="authBtn" style="width: auto; padding: 8px 16px; background: var(--border)" onclick="toggleAuth()">Вход не выполнен</button>
   </header>
 
   <main>
     <section class="panel">
-      <h2>Новая запись</h2>
-      <label>Название</label>
-      <input id="titleInput" placeholder="Что за слово?">
+      <h2>Добавить выражение</h2>
+      <label>Название / выражение</label>
+      <input id="titleInput" placeholder="Например: Ну это уже клиника" />
       <label>Описание</label>
-      <textarea id="descInput" rows="3"></textarea>
-      <label>Теги</label>
-      <input id="tagsInput" placeholder="мем, сленг">
+      <textarea id="descInput" rows="3" placeholder="Что это значит, где используется"></textarea>
+      <label>Хештеги (через запятую)</label>
+      <input id="tagsInput" placeholder="#мем, #ирония" />
       <label>Картинка</label>
-      <input id="imageInput" type="file" accept="image/*">
-      <button onclick="addEntry()">Сохранить в облако</button>
+      <input id="imageInput" type="file" accept="image/*" />
+      <button onclick="addEntry()">Добавить в облако</button>
     </section>
 
     <section>
-      <input class="search" id="searchInput" placeholder="Поиск по базе..." oninput="fetchEntries()">
+      <input class="search" id="searchInput" placeholder="Поиск по словам и тегам…" oninput="fetchEntries()" />
       <div id="list" class="list"></div>
     </section>
   </main>
 
   <script>
     const API_URL = 'http://172.86.94.125:3000/entries';
-    
-    // Пытаемся взять ключ из памяти вкладки
     let authToken = sessionStorage.getItem('api_key');
-    updateLoginBtn();
 
-    function updateLoginBtn() {
-      const btn = document.getElementById('loginStatus');
-      btn.innerText = authToken ? 'Ключ активен (Выйти)' : 'Вход не выполнен';
+    function updateAuthUI() {
+      document.getElementById('authBtn').innerText = authToken ? 'Ключ активен (Выйти)' : 'Вход не выполнен';
     }
 
-    function resetAuth() {
-      sessionStorage.removeItem('api_key');
-      authToken = null;
-      updateLoginBtn();
-      alert('Вы вышли из системы редактирования');
-    }
-
-    // Функция для получения/запроса ключа
-    function getAuthToken() {
-      if (!authToken) {
-        authToken = prompt("Введите секретный API Key:");
-        if (authToken) {
-          sessionStorage.setItem('api_key', authToken);
-          updateLoginBtn();
+    function toggleAuth() {
+      if (authToken) {
+        sessionStorage.removeItem('api_key');
+        authToken = null;
+        alert("Вы вышли");
+      } else {
+        const pass = prompt("Введите API Key:");
+        if (pass) {
+          authToken = pass;
+          sessionStorage.setItem('api_key', pass);
         }
       }
-      return authToken;
+      updateAuthUI();
     }
 
     async function fetchEntries() {
       try {
         const response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Ошибка сервера');
         const data = await response.json();
         render(data);
       } catch (err) {
-        console.error("Сервер недоступен");
+        console.error("Ошибка при получении данных:", err);
       }
     }
 
     async function addEntry() {
       const title = titleInput.value.trim();
-      if (!title) return alert("Нужно название!");
+      if (!title) return alert("Введите название!");
 
-      const token = getAuthToken();
-      if (!token) return;
+      if (!authToken) {
+        const pass = prompt("Введите API Key для публикации:");
+        if (!pass) return;
+        authToken = pass;
+        sessionStorage.setItem('api_key', pass);
+        updateAuthUI();
+      }
 
       const formData = new FormData();
       formData.append('title', title);
       formData.append('desc', descInput.value.trim());
       const tags = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
       formData.append('tags', JSON.stringify(tags));
-
-      if (imageInput.files[0]) {
-        formData.append('image', imageInput.files[0]);
-      }
+      if (imageInput.files[0]) formData.append('image', imageInput.files[0]);
 
       try {
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: { 'x-api-key': token },
+          headers: { 'x-api-key': authToken },
           body: formData
         });
 
         if (response.status === 403) {
           alert("Неверный ключ!");
-          resetAuth();
+          authToken = null; sessionStorage.removeItem('api_key'); updateAuthUI();
         } else if (response.ok) {
           titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
           fetchEntries();
+        } else {
+          alert("Ошибка при сохранении: " + response.statusText);
         }
       } catch (err) {
-        alert("Ошибка сети!");
+        alert("Ошибка сети! Проверьте 'Insecure content' в настройках браузера.");
       }
     }
 
     async function removeEntry(id) {
-      if (!confirm("Удалить запись?")) return;
-      const token = getAuthToken();
-      if (!token) return;
+      if (!confirm("Удалить?")) return;
+      if (!authToken) return alert("Сначала войдите (введите ключ)");
 
       try {
         const response = await fetch(`${API_URL}/${id}`, {
           method: 'DELETE',
-          headers: { 'x-api-key': token }
+          headers: { 'x-api-key': authToken }
         });
-
-        if (response.status === 403) {
-          alert("Ошибка ключа!");
-          resetAuth();
-        } else if (response.ok) {
-          fetchEntries();
-        }
-      } catch (err) {
-        alert("Ошибка при удалении");
-      }
+        if (response.ok) fetchEntries();
+        else alert("Ошибка при удалении");
+      } catch (err) { alert("Ошибка сети"); }
     }
 
     function render(entries) {
       const q = searchInput.value.toLowerCase();
       const listElement = document.getElementById('list');
-      
       const filtered = entries.filter(e => 
-        e.title.toLowerCase().includes(q) || 
-        (e.desc && e.desc.toLowerCase().includes(q))
+        e.title.toLowerCase().includes(q) || (e.desc && e.desc.toLowerCase().includes(q))
       );
 
       listElement.innerHTML = '';
@@ -264,9 +175,7 @@
           <div class="card-body">
             <h3>${e.title}</h3>
             <p>${e.desc || ''}</p>
-            <div style="margin-top:10px">
-              ${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
-            </div>
+            <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
             <button class="del-btn" onclick="removeEntry(${e.id})">Удалить</button>
           </div>
         `;
@@ -274,7 +183,7 @@
       });
     }
 
-    // Первичная загрузка
+    updateAuthUI();
     fetchEntries();
   </script>
 </body>
