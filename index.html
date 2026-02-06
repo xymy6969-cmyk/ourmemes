@@ -3,205 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Самый топовый словарь в мире</title>
+  <title>Private Dictionary</title>
   <style>
     :root {
-      --bg: #0b0d12;
-      --card: rgba(23, 26, 33, 0.85);
-      --text: #e6e6eb;
-      --muted: #9aa0aa;
-      --accent: #7c7cff;
-      --border: rgba(255,255,255,0.08);
-      --success: #2ecc71;
+      --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb;
+      --accent: #7c7cff; --border: rgba(255,255,255,0.08); --success: #2ecc71;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; transition: all 0.3s ease; }
     body {
-      margin: 0; min-height: 100vh;
-      font-family: Inter, system-ui, -apple-system, sans-serif;
-      background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%),
-                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg);
+      margin: 0; min-height: 100vh; font-family: Inter, sans-serif;
+      background: radial-gradient(circle at top left, #1a1d2b, #0b0d12);
       color: var(--text); overflow-x: hidden;
     }
-    body::before {
-      content: ""; position: fixed; inset: 0;
-      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px);
-      pointer-events: none; animation: drift 40s linear infinite;
+
+    /* ПОП-АП АВТОРИЗАЦИИ (БЛОКИРОВКА СЛОВАРЯ) */
+    #lockScreen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(11, 13, 18, 0.95);
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column;
     }
-    @keyframes drift { from { transform: translateX(0); } to { transform: translateX(200px); } }
+    .lock-box {
+      background: var(--card); padding: 40px; border-radius: 24px;
+      border: 1px solid var(--border); text-align: center; max-width: 400px; width: 90%;
+    }
+
+    /* ШТАТНЫЙ ИНТЕРФЕЙС */
+    header { padding: 20px 28px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    main { display: grid; grid-template-columns: 340px 1fr; gap: 28px; padding: 28px; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; }
+    input, textarea { width: 100%; margin: 8px 0; padding: 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; color: #fff; }
     
-    header {
-      position: sticky; top: 0; z-index: 10; padding: 20px 28px;
-      backdrop-filter: blur(14px); background: rgba(11,13,18,0.6);
-      border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
-    }
-
-    /* --- КНОПКА АВТОРИЗАЦИИ (НОВЫЕ СТИЛИ) --- */
-    .auth-btn {
-      padding: 10px 20px;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-
-    /* Состояние: НЕ залогинен */
-    .logged-out {
-      border-color: var(--accent) !important;
-      color: var(--accent) !important;
-      animation: pulse-border 2s infinite;
-    }
-
-    /* Состояние: ЗАЛОГИНЕН */
-    .logged-in {
-      border-color: var(--success) !important;
-      color: var(--success) !important;
-      background: rgba(46, 204, 113, 0.1) !important;
-      animation: none !important;
-      box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
-    }
-
-    @keyframes pulse-border {
-      0% { box-shadow: 0 0 0 0 rgba(124, 124, 255, 0.5); }
-      70% { box-shadow: 0 0 0 10px rgba(124, 124, 255, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(124, 124, 255, 0); }
-    }
-    /* ---------------------------------------- */
-
-    main { width: 100vw; padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
-    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(18px); }
+    .auth-btn { padding: 8px 16px; border-radius: 10px; cursor: pointer; border: 1px solid var(--success); color: var(--success); background: transparent; }
     
-    label { display: block; font-size: 13px; color: var(--muted); margin-top: 12px; }
-    input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); }
-    
-    button:not(.auth-btn) { 
-      margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; 
-      background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer;
-    }
-    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    
-    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; }
-    .card img { width: 100%; height: 170px; object-fit: cover; background: #000; cursor: zoom-in; }
-    .card-body { padding: 14px 16px 16px; }
-    .tag { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 4px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; margin-bottom: 18px; }
+    .card img { width: 100%; height: 200px; object-fit: cover; cursor: zoom-in; }
+    .card-body { padding: 16px; }
+    .tag { font-size: 11px; padding: 3px 8px; border-radius: 20px; background: rgba(124,124,255,0.1); border: 1px solid rgba(124,124,255,0.2); margin-right: 5px; }
 
-    #pop { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; display: none; align-items: center; justify-content: center; cursor: zoom-out; backdrop-filter: blur(8px); }
-    #pop img { max-width: 90%; max-height: 90%; border-radius: 12px; }
+    #pop { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: none; align-items: center; justify-content: center; }
+    #pop img { max-width: 90%; max-height: 90%; border-radius: 10px; }
 
+    .hidden { display: none !important; }
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
+
+  <div id="lockScreen">
+    <div class="lock-box">
+      <h2 style="margin-top:0">Доступ ограничен</h2>
+      <p style="color: var(--muted)">Введите мастер-ключ для просмотра словаря</p>
+      <input type="password" id="passInput" placeholder="Мастер-ключ..." style="text-align:center">
+      <button onclick="tryLogin()" style="width:100%; margin-top:15px; background: var(--accent); color:#fff; border:none; padding:12px; border-radius:12px; cursor:pointer">Войти</button>
+    </div>
+  </div>
+
   <div id="pop" onclick="this.style.display='none'"><img id="popImg"></div>
 
   <header>
-    <div>
-      <h1>Наш персональный словарь</h1>
-      <p style="margin: 6px 0 0; color: var(--muted); font-size: 14px;">Самая крутая база слов, мемов и прочего</p>
-    </div>
-    <button id="authBtn" class="auth-btn" onclick="handleAuthClick()">Авторизация</button>
+    <h1>Словарь</h1>
+    <button class="auth-btn" onclick="logout()">Выйти</button>
   </header>
 
-  <main>
+  <main id="mainContent">
     <section class="panel">
-      <h2>Добавить выражение</h2>
-      <label>Название / выражение</label>
-      <input id="titleInput" placeholder="Например: Ну это уже клиника" />
-      <label>Описание</label>
-      <textarea id="descInput" rows="3" placeholder="Что это значит, где используется"></textarea>
-      <label>Хештеги (через запятую)</label>
-      <input id="tagsInput" placeholder="#мем, #ирония" />
-      <label>Картинка</label>
-      <input id="imageInput" type="file" accept="image/*" />
-      <div style="display: flex; gap: 8px;">
-        <button onclick="addEntry()" style="flex: 2;">Добавить</button>
-        <button class="secondary" onclick="clearAll()" style="flex: 1; margin-top: 14px;">Очистить всё</button>
-      </div>
+      <h3>Новая запись</h3>
+      <input id="titleInput" placeholder="Выражение">
+      <textarea id="descInput" placeholder="Описание"></textarea>
+      <input id="tagsInput" placeholder="#теги, #через, #запятую">
+      <input id="imageInput" type="file" accept="image/*">
+      <button onclick="addEntry()" style="width:100%; background:var(--accent); color:#fff; border:none; padding:12px; border-radius:12px; cursor:pointer; margin-top:10px">Сохранить</button>
     </section>
 
     <section>
-      <input id="searchInput" placeholder="Поиск по словам и тегам…" oninput="render()" 
-             style="width: 100%; padding: 12px 14px; border-radius: 14px; background: rgba(12,14,19,0.6); border: 1px solid var(--border); color: var(--text); margin-bottom: 18px;"/>
-      <div id="list" class="list"></div>
+      <input id="searchInput" oninput="render()" placeholder="Поиск по тегам или названию..." style="margin-bottom:20px">
+      <div id="list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;"></div>
     </section>
   </main>
 
   <script>
     const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
-    const SKIP = { 'ngrok-skip-browser-warning': 'true' };
+    const SKIP = { 'ngrok-skip-browser-warning': 'true' }; // ЭТОТ ЗАГОЛОВОК ЛЕЧИТ КАРТИНКИ
     let entries = [];
 
-    // --- ФУНКЦИЯ ОБНОВЛЕНИЯ КНОПКИ ---
-    function updateAuthUI() {
-      const btn = document.getElementById('authBtn');
-      const key = localStorage.getItem('cloud_key');
-      
-      if (key) {
-        btn.innerText = 'Выйти';
-        btn.className = 'auth-btn logged-in';
-      } else {
-        btn.innerText = 'Авторизация';
-        btn.className = 'auth-btn logged-out';
+    function tryLogin() {
+      const k = passInput.value;
+      if (k) {
+        localStorage.setItem('cloud_key', k);
+        checkAuth();
       }
     }
 
-    function handleAuthClick() {
+    function logout() {
+      localStorage.removeItem('cloud_key');
+      checkAuth();
+    }
+
+    async function checkAuth() {
       const key = localStorage.getItem('cloud_key');
       if (key) {
-        if (confirm('Выйти из системы?')) {
+        const success = await load();
+        if (success) {
+          lockScreen.classList.add('hidden');
+        } else {
+          alert("Неверный ключ!");
           localStorage.removeItem('cloud_key');
-          updateAuthUI();
+          lockScreen.classList.remove('hidden');
         }
       } else {
-        const k = prompt("Введите MASTER_KEY:");
-        if (k) {
-          localStorage.setItem('cloud_key', k);
-          updateAuthUI();
-          load();
-        }
+        lockScreen.classList.remove('hidden');
+        list.innerHTML = '';
       }
     }
 
     async function load() {
+      const key = localStorage.getItem('cloud_key');
       try {
-        const res = await fetch(API_URL, { headers: SKIP });
+        const res = await fetch(API_URL, { 
+          headers: { ...SKIP, 'x-api-key': key } 
+        });
+        if (res.status === 403) return false;
         entries = await res.json();
         render();
-      } catch (e) { console.error("Ошибка сети"); }
+        return true;
+      } catch (e) { return false; }
     }
 
     async function addEntry() {
       const key = localStorage.getItem('cloud_key');
-      if (!key) return handleAuthClick();
-
       const fd = new FormData();
       fd.append('title', titleInput.value);
       fd.append('desc', descInput.value);
-      fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
+      fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim())));
       if (imageInput.files[0]) fd.append('image', imageInput.files[0]);
 
-      const res = await fetch(API_URL, {
+      await fetch(API_URL, {
         method: 'POST',
         headers: { ...SKIP, 'x-api-key': key },
         body: fd
       });
-
-      if (res.ok) {
-        titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
-        load();
-      } else {
-        alert("Ошибка авторизации! Ключ сброшен.");
-        localStorage.removeItem('cloud_key');
-        updateAuthUI();
-      }
+      load();
     }
 
     async function removeEntry(id) {
       const key = localStorage.getItem('cloud_key');
-      if (!key) return handleAuthClick();
       await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
         headers: { ...SKIP, 'x-api-key': key }
@@ -209,45 +156,27 @@
       load();
     }
 
-    async function clearAll() {
-      const key = localStorage.getItem('cloud_key');
-      if (!key) return handleAuthClick();
-      if (!confirm('Удалить всё?')) return;
-      await fetch(API_URL, { 
-        method: 'DELETE', 
-        headers: { ...SKIP, 'x-api-key': key } 
-      });
-      load();
-    }
-
     function render() {
       const q = searchInput.value.toLowerCase();
-      const list = document.getElementById('list');
       list.innerHTML = '';
-      entries.filter(e => 
-        e.title.toLowerCase().includes(q) || 
-        (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
-      ).forEach(e => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          ${e.image ? `<img src="${e.image}" onclick="popImg.src='${e.image}'; pop.style.display='flex'" onerror="this.style.display='none'">` : ''}
+      entries.filter(e => e.title.toLowerCase().includes(q) || (e.tags && e.tags.some(t => t.toLowerCase().includes(q))))
+      .forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+          ${e.image ? `<img src="${e.image}" onclick="popImg.src='${e.image}'; pop.style.display='flex'">` : ''}
           <div class="card-body">
-            <h3>${e.title}</h3>
-            <p>${e.desc || ''}</p>
-            <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-            <div style="margin-top:12px;">
-              <button class="secondary" onclick="removeEntry('${e.id}')">Удалить</button>
-            </div>
+            <h3 style="margin:0">${e.title}</h3>
+            <p style="color:var(--muted); font-size:14px">${e.desc || ''}</p>
+            <div>${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+            <button onclick="removeEntry('${e.id}')" style="margin-top:10px; background:none; border:1px solid #ff4d4d; color:#ff4d4d; border-radius:8px; cursor:pointer; padding:5px 10px">Удалить</button>
           </div>
         `;
-        list.appendChild(card);
+        list.appendChild(div);
       });
     }
 
-    // Запуск при старте
-    updateAuthUI();
-    load();
+    checkAuth();
   </script>
 </body>
 </html>
