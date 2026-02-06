@@ -13,48 +13,143 @@
       --accent: #7c7cff;
       --border: rgba(255,255,255,0.08);
     }
+
     * { box-sizing: border-box; }
+
     body {
-      margin: 0; min-height: 100vh;
-      font-family: Inter, system-ui, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%),
-                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg);
-      color: var(--text); overflow-x: hidden;
+                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%),
+                  var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
     }
+
+    /* Анимация фона */
     body::before {
-      content: ""; position: fixed; inset: 0; pointer-events: none;
-      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 6px);
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        rgba(255,255,255,0.03) 0px,
+        rgba(255,255,255,0.03) 1px,
+        transparent 1px,
+        transparent 6px
+      );
+      pointer-events: none;
       animation: drift 40s linear infinite;
     }
-    @keyframes drift { from { transform: translateX(0); } to { transform: translateX(200px); } }
 
-    /* ЭКРАН ВХОДА */
+    @keyframes drift {
+      from { transform: translateX(0); }
+      to { transform: translateX(200px); }
+    }
+
+    /* ЭКРАН ВХОДА (Lock Screen) */
     #lockScreen {
       position: fixed; inset: 0; z-index: 9999; background: var(--bg);
       display: flex; align-items: center; justify-content: center; backdrop-filter: blur(20px);
     }
-    .lock-box { background: var(--card); border: 1px solid var(--border); padding: 40px; border-radius: 28px; width: 340px; text-align: center; }
-
-    header { padding: 20px 28px; border-bottom: 1px solid var(--border); backdrop-filter: blur(14px); background: rgba(11,13,18,0.6); position: sticky; top: 0; z-index: 10; }
-    main { padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
-    
-    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 20px; backdrop-filter: blur(18px); position: sticky; top: 100px; height: fit-content; }
-    input, textarea { width: 100%; margin-top: 10px; padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; }
-    button { margin-top: 15px; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 600; width: 100%; }
-    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-
-    .search { margin-bottom: 20px; width: 100%; padding: 14px; border-radius: 14px; background: rgba(12,14,19,0.6); border: 1px solid var(--border); color: #fff; }
-    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; transition: 0.3s; }
-    .card img { width: 100%; height: 180px; object-fit: cover; cursor: pointer; }
-    .card-body { padding: 15px; }
-    .tag { font-size: 11px; padding: 4px 10px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 5px; }
+    .lock-box { 
+      background: var(--card); border: 1px solid var(--border); 
+      padding: 40px; border-radius: 28px; width: 340px; text-align: center; 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
 
     /* ПОПАП КАРТИНКИ */
-    #pop { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; cursor: pointer; }
-    #pop img { max-width: 90%; max-height: 90%; border-radius: 12px; }
+    #pop { 
+      position: fixed; inset: 0; z-index: 10000; 
+      background: rgba(0,0,0,0.95); display: none; 
+      align-items: center; justify-content: center; cursor: pointer; 
+      backdrop-filter: blur(10px);
+    }
+    #pop img { max-width: 90%; max-height: 90%; border-radius: 12px; box-shadow: 0 0 50px rgba(124,124,255,0.2); }
 
     .hidden { display: none !important; }
+
+    header {
+      position: sticky; top: 0; z-index: 10; padding: 20px 28px;
+      backdrop-filter: blur(14px); background: rgba(11,13,18,0.6);
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 { margin: 0; font-size: 24px; letter-spacing: 0.4px; }
+    header p { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+
+    main {
+      width: 100vw; min-height: calc(100vh - 80px); padding: 28px;
+      display: grid; grid-template-columns: 340px 1fr; gap: 28px;
+    }
+
+    .panel {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; padding: 20px; backdrop-filter: blur(18px);
+      position: sticky; top: 100px; height: fit-content;
+      animation: floatIn 0.6s ease both;
+    }
+
+    @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    .panel h2 { margin-top: 0; font-size: 18px; }
+
+    label { display: block; font-size: 13px; color: var(--muted); margin-top: 15px; }
+
+    input, textarea {
+      width: 100%; margin-top: 8px; padding: 12px;
+      background: rgba(12,14,19,0.8); border: 1px solid var(--border);
+      border-radius: 12px; color: var(--text); resize: vertical; outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus { border-color: var(--accent); }
+
+    button {
+      margin-top: 20px; padding: 12px 14px; border-radius: 12px; border: none;
+      background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff;
+      cursor: pointer; font-weight: 600; width: 100%;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    button:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,124,255,0.35); }
+
+    button.secondary {
+      background: transparent; border: 1px solid var(--border); color: var(--text); box-shadow: none;
+    }
+    button.secondary:hover { transform: translateY(-2px); background: rgba(255,255,255,0.05); }
+
+    .search {
+      margin-bottom: 20px; width: 100%; padding: 14px; border-radius: 14px;
+      background: rgba(12,14,19,0.6); border: 1px solid var(--border); color: var(--text);
+    }
+
+    .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+    .card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+      overflow: hidden; display: flex; flex-direction: column;
+      backdrop-filter: blur(14px); animation: floatIn 0.5s ease both;
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover { transform: translateY(-4px); border-color: rgba(124,124,255,0.3); }
+
+    .card img { width: 100%; height: 180px; object-fit: cover; cursor: pointer; background: #000; }
+
+    .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
+
+    .card h3 { margin: 0 0 8px; font-size: 17px; }
+    .card p { margin: 0; font-size: 14px; color: #cfd2ff; line-height: 1.4; flex-grow: 1; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .tag {
+      font-size: 11px; padding: 4px 10px; border-radius: 999px;
+      background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25);
+    }
+
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; } .panel { position: relative; top: 0; } }
   </style>
 </head>
 <body>
@@ -71,35 +166,45 @@
 
 <header>
     <h1>Наш персональный словарь</h1>
-    <p style="color: #4caf50; margin: 5px 0 0; font-size: 13px;">● Cloud Sync: Active (Base64)</p>
+    <p style="color: #4caf50;">● Cloud Sync: Active (Base64)</p>
 </header>
 
 <main>
     <section class="panel">
-        <h2>Добавить</h2>
-        <input id="titleInput" placeholder="Название" />
-        <textarea id="descInput" rows="3" placeholder="Описание"></textarea>
-        <input id="tagsInput" placeholder="теги через запятую" />
+        <h2>Добавить выражение</h2>
+        
+        <label>Название</label>
+        <input id="titleInput" placeholder="Например: Ну это уже клиника" />
+        
+        <label>Описание</label>
+        <textarea id="descInput" rows="3" placeholder="Что значит, пример использования"></textarea>
+        
+        <label>Хештеги</label>
+        <input id="tagsInput" placeholder="#мем, #работа" />
+        
+        <label>Картинка</label>
         <input id="imageInput" type="file" accept="image/*" />
+
         <button onclick="addEntry()">Добавить</button>
-        <button class="secondary" onclick="clearAll()">Удалить всё</button>
-        <button class="secondary" onclick="logout()" style="margin-top:10px; border-color:transparent; font-size:12px; opacity:0.5">Выйти</button>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="secondary" onclick="clearAll()" style="margin-top:0;">Очистить БД</button>
+            <button class="secondary" onclick="logout()" style="margin-top:0; border-color: transparent; opacity: 0.6;">Выход</button>
+        </div>
     </section>
 
     <section>
-        <input class="search" id="searchInput" placeholder="Поиск по названию или тегам…" oninput="render()" />
+        <input class="search" id="searchInput" placeholder="Поиск по базе..." oninput="render()" />
         <div id="list" class="list"></div>
     </section>
 </main>
 
 <script>
-    // ВНИМАНИЕ: СЮДА ВСТАВЬ СВОЮ NGROK ССЫЛКУ, ЕСЛИ ОНА ПОМЕНЯЛАСЬ
+    // === НАСТРОЙКИ СЕТИ ===
     const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
-    
     const SKIP_HEADER = { 'ngrok-skip-browser-warning': 'true' };
     let entries = [];
 
-    // При загрузке страницы проверяем ключ
+    // === ПРОВЕРКА ВХОДА ===
     window.onload = () => {
         const key = localStorage.getItem('master_key');
         if (!key) {
@@ -109,7 +214,6 @@
         }
     };
 
-    // Логика входа
     async function tryLogin() {
         const k = document.getElementById('passInput').value;
         if (!k) return;
@@ -119,13 +223,16 @@
                 localStorage.setItem('master_key', k);
                 document.getElementById('lockScreen').classList.add('hidden');
                 load();
-            } else { alert("Неверный мастер-ключ!"); }
-        } catch (e) { alert("Ошибка подключения к VPS. Проверь ngrok."); }
+            } else { alert("Неверный ключ!"); }
+        } catch (e) { alert("Не удалось подключиться к серверу!"); }
     }
 
-    function logout() { localStorage.removeItem('master_key'); location.reload(); }
+    function logout() {
+        localStorage.removeItem('master_key');
+        location.reload();
+    }
 
-    // Загрузка данных
+    // === РАБОТА С ДАННЫМИ ===
     async function load() {
         const key = localStorage.getItem('master_key');
         try {
@@ -136,11 +243,10 @@
         } catch (e) { console.error("Ошибка загрузки"); }
     }
 
-    // Добавление записи
     async function addEntry() {
         const key = localStorage.getItem('master_key');
         const title = document.getElementById('titleInput').value;
-        if (!title) return alert("Введите название!");
+        if (!title) return alert("Нужно хотя бы название!");
 
         const fd = new FormData();
         fd.append('title', title);
@@ -150,7 +256,6 @@
         const file = document.getElementById('imageInput').files[0];
         if (file) fd.append('image', file);
 
-        // Отправляем на сервер
         const res = await fetch(API_URL, {
             method: 'POST',
             headers: { ...SKIP_HEADER, 'x-api-key': key },
@@ -164,13 +269,12 @@
             document.getElementById('imageInput').value = '';
             load();
         } else {
-            alert('Ошибка сохранения. Возможно, файл слишком большой.');
+            alert('Ошибка сервера. Возможно файл слишком большой.');
         }
     }
 
-    // Удаление одной записи
     async function removeEntry(id) {
-        if(!confirm("Удалить запись?")) return;
+        if(!confirm("Удалить эту запись?")) return;
         const key = localStorage.getItem('master_key');
         await fetch(`${API_URL}/${id}`, {
             method: 'DELETE',
@@ -179,9 +283,8 @@
         load();
     }
 
-    // Очистка всего
     async function clearAll() {
-        if (!confirm("Удалить ВСЕ записи? Это необратимо.")) return;
+        if (!confirm("ВНИМАНИЕ: Удалить ВЕСЬ словарь с сервера?")) return;
         const key = localStorage.getItem('master_key');
         await fetch(API_URL, {
             method: 'DELETE',
@@ -190,7 +293,6 @@
         load();
     }
 
-    // Отрисовка карточек
     function render() {
         const q = document.getElementById('searchInput').value.toLowerCase();
         const list = document.getElementById('list');
@@ -198,12 +300,13 @@
 
         entries.filter(e => 
             e.title.toLowerCase().includes(q) || 
+            (e.desc && e.desc.toLowerCase().includes(q)) ||
             (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
         ).forEach(e => {
             const card = document.createElement('div');
             card.className = 'card';
             
-            // Вставляем картинку напрямую из Base64
+            // Если есть картинка (Base64 строка от сервера), показываем её
             const imgHtml = e.image 
                 ? `<img src="${e.image}" onclick="document.getElementById('popImg').src='${e.image}'; document.getElementById('pop').style.display='flex'">` 
                 : '';
@@ -211,10 +314,12 @@
             card.innerHTML = `
                 ${imgHtml}
                 <div class="card-body">
-                    <h3 style="margin:0">${e.title}</h3>
-                    <p style="color:var(--muted); font-size:14px; margin: 8px 0;">${e.desc || ''}</p>
+                    <h3>${e.title}</h3>
+                    <p>${e.desc || ''}</p>
                     <div class="tags">${(e.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}</div>
-                    <button class="secondary" style="margin-top:12px; width:100%; border-color: rgba(255,77,77,0.3); color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
+                    <div style="margin-top: auto; padding-top: 15px;">
+                        <button class="secondary" style="width:100%; border-color: rgba(255,77,77,0.3); color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
+                    </div>
                 </div>
             `;
             list.appendChild(card);
