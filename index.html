@@ -81,9 +81,9 @@
 
 <div id="lockScreen" class="hidden">
   <div class="lock-box">
-    <h2 style="margin-top:0">Доступ к облаку</h2>
+    <h2 style="margin-top:0">Облачное хранилище</h2>
     <input type="password" id="passInput" placeholder="Мастер-ключ" style="text-align:center">
-    <button class="primary" onclick="tryLogin()">Войти</button>
+    <button class="primary" onclick="tryLogin()">Подключиться</button>
   </div>
 </div>
 
@@ -92,7 +92,7 @@
 <header>
   <div>
     <h1>Словарь</h1>
-    <p style="color: #4caf50; margin: 5px 0 0; font-size: 11px; font-weight: bold;">● Cloud Sync: Binary Mode</p>
+    <p id="syncStatus" style="color: #4caf50; margin: 5px 0 0; font-size: 11px; font-weight: bold;">● Cloud Sync: Checking...</p>
   </div>
   <div class="header-actions">
     <button class="btn-header btn-clear-db" onclick="secureClearAll()">Очистить БД</button>
@@ -102,16 +102,16 @@
 
 <main>
   <section class="panel">
-    <h2 style="margin:0; font-size: 18px;">Добавить</h2>
+    <h2 style="margin:0; font-size: 18px;">Новая запись</h2>
     <input id="titleInput" placeholder="Название" />
     <textarea id="descInput" rows="3" placeholder="Описание"></textarea>
     <input id="tagsInput" placeholder="теги через запятую" />
     <input id="imageInput" type="file" accept="image/*" />
-    <button class="primary" onclick="addEntry()">Сохранить</button>
+    <button class="primary" onclick="addEntry()">Сохранить в облако</button>
   </section>
 
   <section>
-    <input class="search" id="searchInput" placeholder="Поиск по названию или тегам…" oninput="render()" />
+    <input class="search" id="searchInput" placeholder="Поиск по названию, тексту или тегам…" oninput="render()" />
     <div id="list" class="list"></div>
   </section>
 </main>
@@ -127,6 +127,7 @@
       document.getElementById('lockScreen').classList.remove('hidden');
     } else {
       load();
+      setInterval(load, 15000); // Обновляем чаще для теста
     }
   };
 
@@ -140,7 +141,7 @@
         document.getElementById('lockScreen').classList.add('hidden');
         load();
       } else { alert("Неверный мастер-ключ!"); }
-    } catch (e) { alert("Ошибка подключения к VPS. Проверь ngrok."); }
+    } catch (e) { alert("Ошибка подключения к серверу."); }
   }
 
   function logout() { 
@@ -150,12 +151,25 @@
 
   async function load() {
     const key = localStorage.getItem('master_key');
+    const status = document.getElementById('syncStatus');
+    if (!key) return;
     try {
       const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': key } });
       if (res.status === 403) return logout();
-      entries = await res.json();
+      
+      const data = await res.json();
+      console.log("Данные с сервера:", data); // Проверка в консоли
+      
+      entries = Array.isArray(data) ? data : [];
       render();
-    } catch (e) { console.error("Ошибка загрузки"); }
+      
+      status.style.color = "#4caf50";
+      status.innerText = `● Cloud Sync: Active (${entries.length} записей)`;
+    } catch (e) { 
+      status.style.color = "#ff4d4d";
+      status.innerText = "● Cloud Sync: Connection Error";
+      console.error("Load error:", e);
+    }
   }
 
   async function addEntry() {
@@ -167,16 +181,15 @@
 
     if (!titleInput.value) return alert("Введите название!");
 
+    const file = imageInput.files[0];
+    const tagsArr = tagsInput.value.split(',').map(t => t.trim()).filter(Boolean);
+
+    // Всегда используем FormData для единообразия, даже если файла нет
     const fd = new FormData();
     fd.append('title', titleInput.value);
     fd.append('desc', descInput.value);
-    fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
-    
-    // Передаем именно файл, а не Base64. Это экономит место и обходит лимиты серверов.
-    const file = imageInput.files[0];
-    if (file) {
-      fd.append('image', file);
-    }
+    fd.append('tags', JSON.stringify(tagsArr));
+    if (file) fd.append('image', file);
 
     try {
       const res = await fetch(API_URL, {
@@ -192,52 +205,38 @@
         imageInput.value = '';
         load();
       } else {
-        const errText = await res.text();
-        alert(`Ошибка сервера: ${res.status}. ${errText.includes('large') ? 'Файл слишком тяжелый для сервера.' : 'Проверьте логи сервера.'}`);
+        const txt = await res.text();
+        alert(`Ошибка сервера: ${res.status}. ${txt}`);
       }
     } catch (e) {
-      alert("Сетевая ошибка при отправке.");
+      alert("Ошибка сети. Проверьте ngrok/сервер.");
     }
   }
 
   async function removeEntry(id) {
-    if(!confirm("Удалить запись?")) return;
+    if(!confirm("Удалить запись из облака?")) return;
     const key = localStorage.getItem('master_key');
     try {
-      const res = await fetch(`${API_URL}/${id}`, {
+      await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
         headers: { ...SKIP_HEADER, 'x-api-key': key }
       });
-      if (res.ok) load();
-      else alert("Не удалось удалить запись на сервере.");
-    } catch (e) {
-      alert("Ошибка при удалении.");
-    }
+      load();
+    } catch (e) { console.error(e); }
   }
 
   async function secureClearAll() {
     const key = localStorage.getItem('master_key');
-    const pass = prompt("ОПАСНО: Это удалит ВСЕ данные. Введите мастер-ключ для подтверждения:");
-    
-    if (pass === null) return;
-    if (pass !== key) {
-      alert("Неверный ключ. Доступ запрещен.");
-      return;
-    }
+    const pass = prompt("Введите мастер-ключ для ПОЛНОЙ очистки:");
+    if (pass !== key) return;
 
     try {
-      const res = await fetch(API_URL, {
+      await fetch(API_URL, {
         method: 'DELETE',
         headers: { ...SKIP_HEADER, 'x-api-key': key }
       });
-
-      if (res.ok) {
-        alert("База данных очищена.");
-        load();
-      }
-    } catch (e) {
-      alert("Ошибка при очистке БД.");
-    }
+      load();
+    } catch (e) { console.error(e); }
   }
 
   function render() {
@@ -245,26 +244,32 @@
     const list = document.getElementById('list');
     list.innerHTML = '';
 
-    // Сортируем: новые сверху
     const filtered = entries.filter(e => 
-      e.title.toLowerCase().includes(q) || 
-      (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
+      e.title?.toLowerCase().includes(q) || 
+      e.desc?.toLowerCase().includes(q) ||
+      (e.tags && Array.isArray(e.tags) && e.tags.some(t => t.toLowerCase().includes(q)))
     );
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--muted); padding: 40px;">Облако пусто или ничего не найдено</div>';
+      return;
+    }
 
     filtered.forEach(e => {
       const card = document.createElement('div');
       card.className = 'card';
-      // Если сервер возвращает относительный путь или Base64, src подхватит
-      const imgHtml = e.image 
-        ? `<img src="${e.image}" onclick="document.getElementById('popImg').src='${e.image}'; document.getElementById('pop').style.display='flex'">` 
+      // Проверяем, является ли e.image полным URL или относительным путем
+      const imgSrc = e.image ? (e.image.startsWith('http') ? e.image : e.image) : '';
+      const imgHtml = imgSrc 
+        ? `<img src="${imgSrc}" onerror="this.style.display='none'" onclick="document.getElementById('popImg').src='${imgSrc}'; document.getElementById('pop').style.display='flex'">` 
         : '';
 
       card.innerHTML = `
         ${imgHtml}
         <div class="card-body">
-          <h3 style="margin:0">${e.title}</h3>
-          <p style="color:var(--muted); font-size:14px; margin: 8px 0; flex-grow: 1;">${e.desc || ''}</p>
-          <div class="tags" style="margin-bottom: 12px;">${(e.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}</div>
+          <h3 style="margin:0">${e.title || 'Без названия'}</h3>
+          <p style="color:var(--muted); font-size:14px; margin: 8px 0; flex-grow: 1; white-space: pre-wrap;">${e.desc || ''}</p>
+          <div class="tags" style="margin-bottom: 12px;">${(Array.isArray(e.tags) ? e.tags : []).map(t => `<span class="tag">#${t}</span>`).join('')}</div>
           <button class="secondary" style="border-color: rgba(255,77,77,0.3); color:#ff4d4d; width: 100%;" onclick="removeEntry('${e.id}')">Удалить</button>
         </div>
       `;
