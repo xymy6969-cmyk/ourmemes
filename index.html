@@ -158,7 +158,7 @@
   const SKIP_HEADER = { 'ngrok-skip-browser-warning': 'true' };
   let entries = [];
 
-  // 1. ПРОВЕРКА ПРИ ЗАГРУЗКЕ
+  // ПРОВЕРКА ПРИ ЗАГРУЗКЕ
   window.onload = () => {
     const key = localStorage.getItem('master_key');
     if (!key) {
@@ -168,7 +168,7 @@
     }
   };
 
-  // 2. ВХОД
+  // ВХОД
   async function tryLogin() {
     const k = document.getElementById('passInput').value;
     if (!k) return;
@@ -186,13 +186,12 @@
     }
   }
 
-  // 3. ВЫХОД
   function logout() {
     localStorage.removeItem('master_key');
     location.reload();
   }
 
-  // 4. ЗАГРУЗКА ДАННЫХ
+  // ЗАГРУЗКА ДАННЫХ
   async function load() {
     const key = localStorage.getItem('master_key');
     try {
@@ -205,7 +204,7 @@
     }
   }
 
-  // 5. ДОБАВЛЕНИЕ ЗАПИСИ
+  // ДОБАВЛЕНИЕ ЗАПИСИ
   async function addEntry() {
     const key = localStorage.getItem('master_key');
     const title = document.getElementById('titleInput').value;
@@ -217,12 +216,25 @@
     fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(Boolean)));
     
     const file = document.getElementById('imageInput').files[0];
-    if (file) fd.append('image', file);
+    
+    // ВАЖНО: Мы используем Base64 для передачи картинки внутри FormData
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        fd.append('image', e.target.result); // Это Base64 строка
+        await sendRequest(fd, key);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      await sendRequest(fd, key);
+    }
+  }
 
+  async function sendRequest(formData, key) {
     const res = await fetch(API_URL, {
       method: 'POST',
       headers: { ...SKIP_HEADER, 'x-api-key': key },
-      body: fd
+      body: formData
     });
 
     if (res.ok) {
@@ -231,10 +243,12 @@
       document.getElementById('tagsInput').value = '';
       document.getElementById('imageInput').value = '';
       load();
+    } else {
+      alert("Ошибка при сохранении. Проверьте размер картинки.");
     }
   }
 
-  // 6. УДАЛЕНИЕ КАРТОЧКИ
+  // УДАЛЕНИЕ КАРТОЧКИ
   async function removeEntry(id) {
     if (!confirm("Удалить запись?")) return;
     const key = localStorage.getItem('master_key');
@@ -245,7 +259,7 @@
     if (res.ok) load();
   }
 
-  // 7. ЗАЩИЩЕННАЯ ОЧИСТКА БД
+  // ЗАЩИЩЕННАЯ ОЧИСТКА БД
   async function secureClearAll() {
     const confirmKey = prompt("ВНИМАНИЕ: Это удалит ВСЕ записи. Для подтверждения введите мастер-ключ:");
     if (!confirmKey) return;
@@ -267,7 +281,6 @@
     }
   }
 
-  // 8. ОТРИСОВКА
   function render() {
     const q = document.getElementById('searchInput').value.toLowerCase();
     const list = document.getElementById('list');
