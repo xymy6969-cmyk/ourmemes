@@ -120,16 +120,136 @@
   </main>
 
   <script>
-    const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
-    const SKIP_HEADER = { 'ngrok-skip-browser-warning': 'true' };
-    let entries = [];
+    // ЗАМЕНИ НА СВОЙ АДРЕС NGROK!
+const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
+const SKIP_HEADER = { 'ngrok-skip-browser-warning': 'true' };
+let entries = [];
 
-    // При входе проверяем наличие ключа
-    window.onload = () => {
-      const key = localStorage.getItem('master_key');
-      if (!key) lockScreen.classList.remove('hidden');
-      else load();
-    };
+// 1. ПРОВЕРКА ПРИ ЗАГРУЗКЕ
+window.onload = () => {
+    const key = localStorage.getItem('master_key');
+    if (!key) {
+        document.getElementById('lockScreen').classList.remove('hidden');
+    } else {
+        load();
+    }
+};
+
+// 2. ВХОД
+async function tryLogin() {
+    const k = document.getElementById('passInput').value;
+    if (!k) return;
+    
+    try {
+        const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': k } });
+        if (res.ok) {
+            localStorage.setItem('master_key', k);
+            document.getElementById('lockScreen').classList.add('hidden');
+            load();
+        } else {
+            alert("Неверный мастер-ключ!");
+        }
+    } catch (e) {
+        alert("Ошибка подключения. Проверь ngrok на VPS.");
+    }
+}
+
+// 3. ВЫХОД
+function logout() {
+    localStorage.removeItem('master_key');
+    location.reload();
+}
+
+// 4. ЗАГРУЗКА ДАННЫХ
+async function load() {
+    const key = localStorage.getItem('master_key');
+    try {
+        const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': key } });
+        if (res.status === 403) return logout();
+        entries = await res.json();
+        render();
+    } catch (e) {
+        console.error("Ошибка загрузки");
+    }
+}
+
+// 5. ДОБАВЛЕНИЕ ЗАПИСИ
+async function addEntry() {
+    const key = localStorage.getItem('master_key');
+    const title = document.getElementById('titleInput').value;
+    if (!title) return alert("Введите название!");
+
+    const fd = new FormData();
+    fd.append('title', title);
+    fd.append('desc', document.getElementById('descInput').value);
+    fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(Boolean)));
+    
+    const file = document.getElementById('imageInput').files[0];
+    if (file) fd.append('image', file);
+
+    const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { ...SKIP_HEADER, 'x-api-key': key },
+        body: fd
+    });
+
+    if (res.ok) {
+        document.getElementById('titleInput').value = '';
+        document.getElementById('descInput').value = '';
+        document.getElementById('tagsInput').value = '';
+        document.getElementById('imageInput').value = '';
+        load();
+    }
+}
+
+// 6. УДАЛЕНИЕ
+async function removeEntry(id) {
+    const key = localStorage.getItem('master_key');
+    const res = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: { ...SKIP_HEADER, 'x-api-key': key }
+    });
+    if (res.ok) load();
+}
+
+// 7. ОЧИСТКА ВСЕГО
+async function clearAll() {
+    if (!confirm("Удалить ВСЕ записи?")) return;
+    const key = localStorage.getItem('master_key');
+    await fetch(API_URL, {
+        method: 'DELETE',
+        headers: { ...SKIP_HEADER, 'x-api-key': key }
+    });
+    load();
+}
+
+// 8. ОТРИСОВКА (ДИЗАЙН КАРТОЧЕК)
+function render() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+
+    entries.filter(e => 
+        e.title.toLowerCase().includes(q) || 
+        (e.tags && e.tags.some(t => t.toLowerCase().includes(q)))
+    ).forEach(e => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        // Добавляем timestamp к картинке, чтобы браузер не кешировал "битую" версию
+        const imgPath = e.image ? `${e.image}?t=${Date.now()}` : null;
+
+        card.innerHTML = `
+            ${imgPath ? `<img src="${imgPath}" onclick="popImg.src='${imgPath}'; document.getElementById('pop').style.display='flex'">` : ''}
+            <div class="card-body">
+                <h3 style="margin:0">${e.title}</h3>
+                <p style="color:var(--muted); font-size:14px; margin: 8px 0;">${e.desc || ''}</p>
+                <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+                <button class="secondary" style="margin-top:12px; width:100%; border-color: rgba(255,77,77,0.3); color:#ff4d4d;" onclick="removeEntry('${e.id}')">Удалить</button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
 
     async function tryLogin() {
       const k = passInput.value;
