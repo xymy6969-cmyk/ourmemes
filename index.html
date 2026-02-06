@@ -141,22 +141,24 @@
     }
 
     function render() {
-      const q = document.getElementById('searchInput').value.toLowerCase();
-      const list = document.getElementById('list');
-      const filtered = entries.filter(e => e.title.toLowerCase().includes(q));
-
-      list.innerHTML = filtered.map(e => `
-        <div class="card">
-          ${e.image ? `<img src="${e.image}">` : ''}
-          <div class="card-body">
-            <h3>${e.title}</h3>
-            <p>${e.desc || ''}</p>
-            <div style="margin-top:10px;">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-            <button onclick="removeEntry(${e.id})" style="background:none; border:1px solid var(--border); color:var(--text); margin-top:12px; cursor:pointer; padding:5px 10px; border-radius:8px; font-size:11px;">Удалить</button>
-          </div>
-        </div>
-      `).join('');
-    }
+  const list = document.getElementById('list');
+  list.innerHTML = ''; // Очищаем перед отрисовкой
+  
+  entries.forEach(e => {
+    const card = document.createElement('div');
+    card.className = 'card'; // Твой оригинальный класс
+    card.innerHTML = `
+      ${e.image ? `<img src="${e.image}">` : ''}
+      <div class="card-body">
+        <h3>${e.title}</h3>
+        <p>${e.desc || ''}</p>
+        <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+        <button class="secondary" onclick="removeEntry(${e.id})">Удалить</button>
+      </div>
+    `;
+    list.appendChild(card); // Добавляем блок в список
+  });
+}
 
     updateUI();
     load();
