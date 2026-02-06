@@ -72,32 +72,46 @@
   </main>
 
   <script>
-    const API_URL = 'https://172.86.94.125.sslip.io/entries';
+    // Твоя новая рабочая ссылка через ngrok
+    const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries'; 
+    
     let authToken = sessionStorage.getItem('api_key');
 
-    function updateAuthUI() {
-      document.getElementById('authBtn').innerText = authToken ? 'Ключ активен (Выйти)' : 'Вход не выполнен';
+    // Функция отрисовки (Render) - теперь берет данные из базы
+    function render(entries) {
+      const q = searchInput.value.toLowerCase();
+      const listElement = document.getElementById('list');
+      
+      // Фильтруем по поиску
+      const filtered = entries.filter(e => 
+        e.title.toLowerCase().includes(q) || 
+        (e.desc && e.desc.toLowerCase().includes(q)) ||
+        (e.tags && e.tags.join(' ').toLowerCase().includes(q))
+      );
+
+      listElement.innerHTML = '';
+      filtered.forEach(e => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          ${e.image ? `<img src="${e.image}">` : ''}
+          <div class="card-body">
+            <h3>${e.title}</h3>
+            <p>${e.desc || ''}</p>
+            <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
+            <div class="actions">
+              <button class="secondary" onclick="removeEntry(${e.id})">Удалить</button>
+            </div>
+          </div>
+        `;
+        listElement.appendChild(card);
+      });
     }
 
-    function toggleAuth() {
-      if (authToken) {
-        sessionStorage.removeItem('api_key');
-        authToken = null;
-        alert("Вы вышли");
-      } else {
-        const pass = prompt("Введите API Key:");
-        if (pass) {
-          authToken = pass;
-          sessionStorage.setItem('api_key', pass);
-        }
-      }
-      updateAuthUI();
-    }
-
+    // Загрузка данных с сервера
     async function fetchEntries() {
       try {
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error('Ошибка сервера');
         const data = await response.json();
         render(data);
       } catch (err) {
@@ -105,16 +119,16 @@
       }
     }
 
+    // Добавление новой записи
     async function addEntry() {
       const title = titleInput.value.trim();
       if (!title) return alert("Введите название!");
 
+      // Если ключа нет, спрашиваем его
       if (!authToken) {
-        const pass = prompt("Введите API Key для публикации:");
-        if (!pass) return;
-        authToken = pass;
-        sessionStorage.setItem('api_key', pass);
-        updateAuthUI();
+        authToken = prompt("Введите секретный API Key для сохранения:");
+        if (!authToken) return;
+        sessionStorage.setItem('api_key', authToken);
       }
 
       const formData = new FormData();
@@ -133,21 +147,26 @@
 
         if (response.status === 403) {
           alert("Неверный ключ!");
-          authToken = null; sessionStorage.removeItem('api_key'); updateAuthUI();
+          sessionStorage.removeItem('api_key');
+          authToken = null;
         } else if (response.ok) {
+          // Очищаем поля
           titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
           fetchEntries();
-        } else {
-          alert("Ошибка при сохранении: " + response.statusText);
         }
       } catch (err) {
-        alert("Ошибка сети! Проверьте 'Insecure content' в настройках браузера.");
+        alert("Ошибка сети! Проверь консоль браузера.");
       }
     }
 
+    // Удаление записи
     async function removeEntry(id) {
-      if (!confirm("Удалить?")) return;
-      if (!authToken) return alert("Сначала войдите (введите ключ)");
+      if (!confirm("Удалить это из облака?")) return;
+      if (!authToken) {
+        authToken = prompt("Введите API Key:");
+        if (!authToken) return;
+        sessionStorage.setItem('api_key', authToken);
+      }
 
       try {
         const response = await fetch(`${API_URL}/${id}`, {
@@ -155,36 +174,13 @@
           headers: { 'x-api-key': authToken }
         });
         if (response.ok) fetchEntries();
-        else alert("Ошибка при удалении");
-      } catch (err) { alert("Ошибка сети"); }
+      } catch (err) {
+        alert("Ошибка при удалении");
+      }
     }
 
-    function render(entries) {
-      const q = searchInput.value.toLowerCase();
-      const listElement = document.getElementById('list');
-      const filtered = entries.filter(e => 
-        e.title.toLowerCase().includes(q) || (e.desc && e.desc.toLowerCase().includes(q))
-      );
-
-      listElement.innerHTML = '';
-      filtered.forEach(e => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          ${e.image ? `<img src="${e.image}">` : ''}
-          <div class="card-body">
-            <h3>${e.title}</h3>
-            <p>${e.desc || ''}</p>
-            <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
-            <button class="del-btn" onclick="removeEntry(${e.id})">Удалить</button>
-          </div>
-        `;
-        listElement.appendChild(card);
-      });
-    }
-
-    updateAuthUI();
+    // Запускаем первичную загрузку при открытии сайта
     fetchEntries();
-  </script>
+</script>
 </body>
 </html>
