@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Самый топовый словарь в мире</title>
   <style>
-    /* ВОЗВРАЩАЕМ ТОТ САМЫЙ ДИЗАЙН ИЗ ПЕРВОЙ ВЕРСИИ */
+    /* 1. ВОЗВРАЩАЕМ ТОЧНЫЙ ДИЗАЙН (Цвета и Шрифты) */
     :root { 
       --bg: #0b0d12; --card: rgba(23, 26, 33, 0.85); --text: #e6e6eb; 
       --muted: #9aa0aa; --accent: #7c7cff; --border: rgba(255,255,255,0.08); 
@@ -24,10 +24,10 @@
     }
     @keyframes drift { from { transform: translateX(0); } to { transform: translateX(200px); } }
 
-    /* ПОП-АП АВТОРИЗАЦИИ (НЕ ГЛОТАЕТ ДИЗАЙН) */
+    /* ЭКРАН БЛОКИРОВКИ (LOCK SCREEN) */
     #lockScreen {
       position: fixed; inset: 0; z-index: 9999;
-      background: rgba(11, 13, 18, 0.95); backdrop-filter: blur(25px);
+      background: rgba(11, 13, 18, 0.98); backdrop-filter: blur(20px);
       display: flex; align-items: center; justify-content: center;
     }
     .lock-box {
@@ -57,10 +57,12 @@
     }
     button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
     
+    /* СЕТКА КАРТОЧЕК */
     .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; }
     .card img { width: 100%; height: 170px; object-fit: cover; background: #000; cursor: pointer; }
     .card-body { padding: 14px 16px 16px; }
+    
     .tag { 
       font-size: 12px; padding: 4px 9px; border-radius: 999px; 
       background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 4px; 
@@ -77,10 +79,9 @@
 
   <div id="lockScreen" class="hidden">
     <div class="lock-box">
-      <h2 style="margin-top:0">Доступ ограничен</h2>
-      <p style="color: var(--muted)">Введите мастер-ключ для входа</p>
-      <input type="password" id="passInput" placeholder="..." style="text-align:center">
-      <button onclick="tryLogin()" style="width:100%">Войти в облако</button>
+      <h2 style="margin-top:0">Вход в словарь</h2>
+      <input type="password" id="passInput" placeholder="Мастер-ключ" style="text-align:center">
+      <button onclick="tryLogin()" style="width:100%">Войти</button>
     </div>
   </div>
 
@@ -89,7 +90,7 @@
   <header>
     <div>
       <h1 style="margin:0">Наш персональный словарь</h1>
-      <p id="statusTxt" style="margin: 6px 0 0; color: var(--muted); font-size: 13px;">Синхронизация...</p>
+      <p id="statusTxt" style="margin: 6px 0 0; color: var(--muted); font-size: 13px;">Cloud Sync: Active</p>
     </div>
     <button class="secondary" onclick="logout()">Выйти</button>
   </header>
@@ -107,7 +108,7 @@
       <input id="imageInput" type="file" accept="image/*" />
       <div style="display: flex; gap: 8px;">
         <button onclick="addEntry()" style="flex: 2;">Добавить</button>
-        <button class="secondary" onclick="clearAll()" style="flex: 1; margin-top: 14px;">Очистить</button>
+        <button class="secondary" onclick="clearAll()" style="flex: 1; margin-top: 14px;">Очистить всё</button>
       </div>
     </section>
 
@@ -123,26 +124,22 @@
     const SKIP_HEADER = { 'ngrok-skip-browser-warning': 'true' };
     let entries = [];
 
-    // 1. ПРОВЕРКА ПРИ ЗАГРУЗКЕ
+    // При входе проверяем наличие ключа
     window.onload = () => {
       const key = localStorage.getItem('master_key');
-      if (!key) {
-        lockScreen.classList.remove('hidden');
-      } else {
-        load();
-      }
+      if (!key) lockScreen.classList.remove('hidden');
+      else load();
     };
 
     async function tryLogin() {
       const k = passInput.value;
+      // Проверка ключа через запрос данных
       const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': k } });
       if (res.ok) {
         localStorage.setItem('master_key', k);
         lockScreen.classList.add('hidden');
         load();
-      } else {
-        alert("Неверный ключ!");
-      }
+      } else alert("Неверный ключ");
     }
 
     function logout() {
@@ -156,11 +153,8 @@
         const res = await fetch(API_URL, { headers: { ...SKIP_HEADER, 'x-api-key': key } });
         if (res.status === 403) return logout();
         entries = await res.json();
-        statusTxt.innerText = "Cloud Sync: Active";
         render();
-      } catch (e) {
-        statusTxt.innerText = "Ошибка подключения к VPS";
-      }
+      } catch (e) { statusTxt.innerText = "Сервер не отвечает"; }
     }
 
     async function addEntry() {
@@ -183,7 +177,7 @@
     }
 
     async function clearAll() {
-      if (!confirm('Точно удалить ВСЁ?')) return;
+      if (!confirm('Удалить всё?')) return;
       const key = localStorage.getItem('master_key');
       await fetch(API_URL, { method: 'DELETE', headers: { ...SKIP_HEADER, 'x-api-key': key } });
       load();
@@ -200,8 +194,11 @@
       ).forEach(e => {
         const card = document.createElement('div');
         card.className = 'card';
+        // ДОБАВЛЯЕМ КЛЮЧ К ССЫЛКЕ КАРТИНКИ ДЛЯ ОБХОДА NGROK
+        const imgUrl = e.image ? `${e.image}?key=ok` : null;
+
         card.innerHTML = `
-          ${e.image ? `<img src="${e.image}" onclick="popImg.src='${e.image}'; pop.style.display='flex'">` : ''}
+          ${imgUrl ? `<img src="${imgUrl}" onclick="popImg.src='${imgUrl}'; pop.style.display='flex'">` : ''}
           <div class="card-body">
             <h3 style="margin:0">${e.title}</h3>
             <p style="color:var(--muted); font-size:14px; margin: 8px 0;">${e.desc || ''}</p>
