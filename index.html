@@ -33,17 +33,14 @@
     </style>
 </head>
 <body>
-
 <div id="lockScreen">
     <div class="lock-box">
-        <h2>Доступ к системе</h2>
+        <h2>Вход</h2>
         <input type="password" id="passInput" placeholder="Мастер-ключ" style="text-align:center">
         <button id="loginBtn" onclick="tryLogin()">Войти</button>
     </div>
 </div>
-
 <header><h1>Наш персональный словарь</h1></header>
-
 <main>
     <aside class="panel">
         <h2>Добавить</h2>
@@ -58,39 +55,25 @@
         <div id="list" class="list"></div>
     </section>
 </main>
-
 <script>
     const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
     let entries = [];
+    const getHeaders = () => ({ 'ngrok-skip-browser-warning': 'true', 'x-api-key': localStorage.getItem('auth_key') });
 
-    // При загрузке проверяем ключ
-    window.onload = () => {
-        const savedKey = localStorage.getItem('auth_key');
-        if (savedKey) {
-            document.getElementById('lockScreen').classList.add('hidden');
-            load();
-        }
-    };
+    window.onload = () => { if (localStorage.getItem('auth_key')) { document.getElementById('lockScreen').classList.add('hidden'); load(); } };
 
     async function tryLogin() {
         const k = document.getElementById('passInput').value;
         const btn = document.getElementById('loginBtn');
         btn.disabled = true; btn.innerText = 'Вход...';
-        
         const res = await fetch(API_URL, { headers: { 'ngrok-skip-browser-warning': 'true', 'x-api-key': k } });
-        if (res.ok) {
-            localStorage.setItem('auth_key', k);
-            document.getElementById('lockScreen').classList.add('hidden');
-            load();
-        } else {
-            alert("Неверный ключ!");
-        }
+        if (res.ok) { localStorage.setItem('auth_key', k); document.getElementById('lockScreen').classList.add('hidden'); load(); }
+        else alert("Неверный ключ!");
         btn.disabled = false; btn.innerText = 'Войти';
     }
 
     async function load() {
-        const k = localStorage.getItem('auth_key');
-        const res = await fetch(API_URL, { headers: { 'ngrok-skip-browser-warning': 'true', 'x-api-key': k } });
+        const res = await fetch(API_URL, { headers: getHeaders() });
         if (res.status === 403) { localStorage.removeItem('auth_key'); location.reload(); }
         entries = await res.json();
         render();
@@ -98,18 +81,14 @@
 
     async function addEntry() {
         const btn = document.getElementById('addBtn');
-        btn.disabled = true; btn.innerText = 'Загрузка...';
+        btn.disabled = true; btn.innerText = 'Сохранение...';
         const fd = new FormData();
         fd.append('title', document.getElementById('titleInput').value);
         fd.append('desc', document.getElementById('descInput').value);
         fd.append('tags', JSON.stringify(document.getElementById('tagsInput').value.split(',').map(t=>t.trim())));
         if (document.getElementById('imageInput').files[0]) fd.append('image', document.getElementById('imageInput').files[0]);
 
-        await fetch(API_URL, { 
-            method: 'POST', 
-            headers: { 'ngrok-skip-browser-warning': 'true', 'x-api-key': localStorage.getItem('auth_key') }, 
-            body: fd 
-        });
+        await fetch(API_URL, { method: 'POST', headers: getHeaders(), body: fd });
         btn.disabled = false; btn.innerText = 'Сохранить';
         load();
     }
@@ -121,17 +100,12 @@
         entries.filter(e => e.title.toLowerCase().includes(q)).forEach(e => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.innerHTML = `${e.image ? `<img src="${e.image}">` : ''}<div class="card-body"><h3>${e.title}</h3><p>${e.desc || ''}</p><div>${(e.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}</div><button onclick="deleteEntry('${e.id}')" style="background:transparent; color:#ff5c5c; padding:5px; margin-top:10px; border:1px solid rgba(255,77,77,0.2)">Удалить</button></div>`;
+            card.innerHTML = `${e.image ? `<img src="${e.image}">` : ''}<div class="card-body"><h3>${e.title}</h3><p>${e.desc || ''}</p><div>${(e.tags || []).map(t => `<span class="tag">#${t}</span>`).join('')}</div><button onclick="del('${e.id}')" style="background:transparent; color:#ff5c5c; padding:5px; margin-top:10px; border:1px solid rgba(255,77,77,0.2); width:auto;">Удалить</button></div>`;
             list.appendChild(card);
         });
     }
 
-    async function deleteEntry(id) {
-        if (confirm('Удалить?')) {
-            await fetch(API_URL + '/' + id, { method: 'DELETE', headers: { 'ngrok-skip-browser-warning': 'true', 'x-api-key': localStorage.getItem('auth_key') } });
-            load();
-        }
-    }
+    async function del(id) { if (confirm('Удалить?')) { await fetch(API_URL + '/' + id, { method: 'DELETE', headers: getHeaders() }); load(); } }
 </script>
 </body>
 </html>
