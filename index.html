@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Самый топовый словарь в мире</title>
   <style>
-    /* ТВОЙ ОРИГИНАЛЬНЫЙ CSS */
     :root {
       --bg: #0b0d12;
       --card: rgba(23, 26, 33, 0.85);
@@ -19,8 +18,7 @@
       margin: 0; min-height: 100vh;
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background: radial-gradient(1200px 600px at 10% 10%, #1a1d2b, transparent 60%),
-                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%),
-                  var(--bg);
+                  radial-gradient(800px 500px at 90% 80%, #22255a, transparent 60%), var(--bg);
       color: var(--text); overflow-x: hidden;
     }
     body::before {
@@ -32,32 +30,23 @@
     header {
       position: sticky; top: 0; z-index: 10; padding: 20px 28px;
       backdrop-filter: blur(14px); background: rgba(11,13,18,0.6);
-      border-bottom: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;
     }
     header h1 { margin: 0; font-size: 24px; letter-spacing: 0.4px; }
     header p { margin: 6px 0 0; color: var(--muted); }
-    main { width: 100vw; min-height: calc(100vh - 80px); padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
-    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(18px); animation: floatIn 0.6s ease both; }
-    @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .panel h2 { margin-top: 0; font-size: 18px; }
+    main { width: 100vw; padding: 28px; display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 18px; backdrop-filter: blur(18px); }
     label { display: block; font-size: 13px; color: var(--muted); margin-top: 12px; }
-    input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); resize: vertical; }
-    input:focus, textarea:focus { outline: none; border-color: var(--accent); }
-    button { margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; transition: transform .15s ease, box-shadow .15s ease; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(124,124,255,0.35); }
-    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); box-shadow: none; }
+    input, textarea { width: 100%; margin-top: 6px; padding: 10px 12px; background: rgba(12,14,19,0.8); border: 1px solid var(--border); border-radius: 12px; color: var(--text); }
+    button { margin-top: 14px; padding: 10px 14px; border-radius: 12px; border: none; background: linear-gradient(135deg, #7c7cff, #9b7cff); color: #fff; cursor: pointer; font-weight: 500; }
+    button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .search { margin-bottom: 18px; width: 100%; padding: 12px 14px; border-radius: 14px; background: rgba(12,14,19,0.6); border: 1px solid var(--border); color: var(--text); }
     .list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; backdrop-filter: blur(14px); animation: floatIn 0.5s ease both; }
-    .card:hover { transform: translateY(-4px); transition: transform .2s ease; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; backdrop-filter: blur(14px); }
     .card img { width: 100%; height: 170px; object-fit: cover; background: #000; }
     .card-body { padding: 14px 16px 16px; }
-    .card h3 { margin: 0 0 6px; font-size: 16px; }
-    .card p { margin: 0; font-size: 14px; color: #cfd2ff; }
-    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-    .tag { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); }
-    .actions { margin-top: 12px; display: flex; gap: 8px; }
+    .tag { font-size: 12px; padding: 4px 9px; border-radius: 999px; background: rgba(124,124,255,0.15); color: #c6c8ff; border: 1px solid rgba(124,124,255,0.25); margin-right: 4px; }
+    .actions { margin-top: 12px; }
     @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -76,8 +65,8 @@
       <label>Название / выражение</label>
       <input id="titleInput" placeholder="Например: Ну это уже клиника" />
       <label>Описание</label>
-      <textarea id="descInput" rows="3" placeholder="Что это значит, где используется"></textarea>
-      <label>Хештеги (через запятую)</label>
+      <textarea id="descInput" rows="3" placeholder="Что это значит"></textarea>
+      <label>Хештеги</label>
       <input id="tagsInput" placeholder="#мем, #ирония" />
       <label>Картинка</label>
       <input id="imageInput" type="file" accept="image/*" />
@@ -86,58 +75,36 @@
     </section>
 
     <section>
-      <input class="search" id="searchInput" placeholder="Поиск по словам и тегам…" oninput="render()" />
+      <input class="search" id="searchInput" placeholder="Поиск…" oninput="render()" />
       <div id="list" class="list"></div>
     </section>
   </main>
 
   <script>
     const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
-    // Заголовок, чтобы ngrok не показывал страницу-предупреждение
     const SKIP_WARN = { 'ngrok-skip-browser-warning': 'true' };
     let entries = [];
 
-    // Функция для ввода ключа (MASTER_KEY)
     function auth() {
-      const k = prompt("Введите MASTER_KEY для управления облаком:");
-      if (k) localStorage.setItem('cloud_api_key', k);
+      const k = prompt("Введите MASTER_KEY:");
+      if (k) localStorage.setItem('api_key', k);
     }
 
-    // Загрузка данных с сервера
     async function load() {
       try {
         const res = await fetch(API_URL, { headers: SKIP_WARN });
         entries = await res.json();
         render();
-      } catch (e) { console.error("Ошибка загрузки данных с сервера"); }
+      } catch (e) { console.error("Ошибка загрузки"); }
     }
 
-    // Добавление записи (твоя логика + fetch)
-    async function removeEntry(id) {
-      const key = localStorage.getItem('cloud_api_key');
+    async function addEntry() {
+      const key = localStorage.getItem('api_key');
       if (!key) return auth();
 
-      // Мы передаем ID прямо в URL
-      const res = await fetch(`${API_URL}/${id}`, { 
-        method: 'DELETE', 
-        headers: { 
-          ...SKIP_WARN, 
-          'x-api-key': key 
-        } 
-      });
-
-      if (res.ok) {
-        load(); // Обновляем список, если сервер ответил 200 OK
-      } else {
-        alert("Ошибка удаления! Проверь ключ в Авторизации.");
-      }
-    }
-      const title = titleInput.value.trim();
-      if (!title) return;
-
       const fd = new FormData();
-      fd.append('title', title);
-      fd.append('desc', descInput.value.trim());
+      fd.append('title', titleInput.value);
+      fd.append('desc', descInput.value);
       fd.append('tags', JSON.stringify(tagsInput.value.split(',').map(t => t.trim()).filter(Boolean)));
       if (imageInput.files[0]) fd.append('image', imageInput.files[0]);
 
@@ -149,41 +116,33 @@
 
       if (res.ok) {
         titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
-        load(); // Перезагружаем список
-      } else { alert("Ошибка! Проверь MASTER_KEY."); }
+        load();
+      } else { alert("Ошибка авторизации!"); }
     }
 
-    // ВОТ ТУТ ИСПРАВЛЕНО: Удаление одного блока
     async function removeEntry(id) {
-      const key = localStorage.getItem('cloud_api_key');
+      const key = localStorage.getItem('api_key');
       if (!key) return auth();
 
-      const res = await fetch(`${API_URL}/${id}`, { 
-        method: 'DELETE', 
-        headers: { ...SKIP_WARN, 'x-api-key': key } 
-      });
-
-      if (res.ok) {
-        load(); // Обновляем список после удаления
-      } else {
-        alert("Не удалось удалить. Проверь авторизацию.");
-      }
-    }
-
-    // Очистка всего словаря на сервере
-    async function clearAll() {
-      if (!confirm('Точно удалить ВЕСЬ словарь из облака?')) return;
-      const key = localStorage.getItem('cloud_api_key');
-      
-      const res = await fetch(API_URL, { 
-        method: 'DELETE', 
-        headers: { ...SKIP_WARN, 'x-api-key': key } 
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+        headers: { ...SKIP_WARN, 'x-api-key': key }
       });
 
       if (res.ok) load();
+      else alert("Ошибка удаления!");
     }
 
-    // ТВОЯ ОРИГИНАЛЬНАЯ ОТРИСОВКА
+    async function clearAll() {
+      if (!confirm('Удалить всё?')) return;
+      const key = localStorage.getItem('api_key');
+      await fetch(API_URL, { 
+        method: 'DELETE', 
+        headers: { ...SKIP_WARN, 'x-api-key': key } 
+      });
+      load();
+    }
+
     function render() {
       const q = searchInput.value.toLowerCase();
       const list = document.getElementById('list');
@@ -204,7 +163,7 @@
             <p>${e.desc || ''}</p>
             <div class="tags">${(e.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}</div>
             <div class="actions">
-              <button class="secondary" onclick="removeEntry(${e.id})">Удалить</button>
+              <button class="secondary" onclick="removeEntry('${e.id}')">Удалить</button>
             </div>
           </div>
         `;
@@ -212,7 +171,7 @@
       });
     }
 
-    load(); // Запуск при открытии страницы
+    load();
   </script>
 </body>
 </html>
