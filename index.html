@@ -93,22 +93,26 @@
 
   <script>
     const API_URL = 'https://unelicitable-bayleigh-nonmodificatory.ngrok-free.dev/entries';
+    // Заголовок, чтобы ngrok не показывал страницу-предупреждение
     const SKIP_WARN = { 'ngrok-skip-browser-warning': 'true' };
     let entries = [];
 
+    // Функция для ввода ключа (MASTER_KEY)
     function auth() {
-      const k = prompt("Введите MASTER_KEY:");
+      const k = prompt("Введите MASTER_KEY для управления облаком:");
       if (k) localStorage.setItem('cloud_api_key', k);
     }
 
+    // Загрузка данных с сервера
     async function load() {
       try {
         const res = await fetch(API_URL, { headers: SKIP_WARN });
         entries = await res.json();
         render();
-      } catch (e) { console.error("Ошибка загрузки"); }
+      } catch (e) { console.error("Ошибка загрузки данных с сервера"); }
     }
 
+    // Добавление записи (твоя логика + fetch)
     async function addEntry() {
       const key = localStorage.getItem('cloud_api_key');
       if (!key) return auth();
@@ -130,30 +134,41 @@
 
       if (res.ok) {
         titleInput.value = ''; descInput.value = ''; tagsInput.value = ''; imageInput.value = '';
-        load();
-      } else { alert("Ошибка сохранения!"); }
+        load(); // Перезагружаем список
+      } else { alert("Ошибка! Проверь MASTER_KEY."); }
     }
 
+    // ВОТ ТУТ ИСПРАВЛЕНО: Удаление одного блока
     async function removeEntry(id) {
       const key = localStorage.getItem('cloud_api_key');
-      await fetch(`${API_URL}/${id}`, { 
+      if (!key) return auth();
+
+      const res = await fetch(`${API_URL}/${id}`, { 
         method: 'DELETE', 
         headers: { ...SKIP_WARN, 'x-api-key': key } 
       });
-      load();
+
+      if (res.ok) {
+        load(); // Обновляем список после удаления
+      } else {
+        alert("Не удалось удалить. Проверь авторизацию.");
+      }
     }
 
+    // Очистка всего словаря на сервере
     async function clearAll() {
-      if (!confirm('Точно удалить весь словарь?')) return;
+      if (!confirm('Точно удалить ВЕСЬ словарь из облака?')) return;
       const key = localStorage.getItem('cloud_api_key');
-      await fetch(API_URL, { 
+      
+      const res = await fetch(API_URL, { 
         method: 'DELETE', 
         headers: { ...SKIP_WARN, 'x-api-key': key } 
       });
-      load();
+
+      if (res.ok) load();
     }
 
-    // ТВОЯ ОРИГИНАЛЬНАЯ ЛОГИКА ОТРИСОВКИ
+    // ТВОЯ ОРИГИНАЛЬНАЯ ОТРИСОВКА
     function render() {
       const q = searchInput.value.toLowerCase();
       const list = document.getElementById('list');
@@ -182,7 +197,7 @@
       });
     }
 
-    load();
+    load(); // Запуск при открытии страницы
   </script>
 </body>
 </html>
